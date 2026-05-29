@@ -1,0 +1,187 @@
+/* ===========================================================================
+   Local custom fonts (Hebrew display + text faces).
+   Files live in /public/fonts/<Family>/… and are served from the site root,
+   so url() paths are absolute ("/fonts/…"). Spaces are %20-encoded.
+   Decorative variants (Dots / Outline / Shadow / Emboss / Wireframe) are
+   intentionally omitted — they aren't weights and would clash on the scale.
+   =========================================================================== */
+
+/* ---- Babav (משקלים: רגיל, מודגש) ---- */
+@font-face { font-family:'Babav'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Babav/Babav2FM-Regular.ttf') format('truetype'); }
+@font-face { font-family:'Babav'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Babav/Babav2FM-Bold.ttf') format('truetype'); }
+
+/* ---- Bamberger Sharp ---- */
+@font-face { font-family:'Bamberger'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/Bamberger/bamberger-sharp-light-fm.ttf') format('truetype'); }
+@font-face { font-family:'Bamberger'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Bamberger/bamberger-sharp-regular-fm.ttf') format('truetype'); }
+@font-face { font-family:'Bamberger'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('/fonts/Bamberger/bamberger-sharp-medium-fm.ttf') format('truetype'); }
+@font-face { font-family:'Bamberger'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Bamberger/bamberger-sharp-bold-fm.ttf') format('truetype'); }
+@font-face { font-family:'Bamberger'; font-weight:800; font-style:normal; font-display:swap;
+  src:url('/fonts/Bamberger/bamberger-sharp-ultrabold-fm.ttf') format('truetype'); }
+@font-face { font-family:'Bamberger'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Bamberger/bamberger-sharp-black-fm.ttf') format('truetype'); }
+
+/* ---- Discovery ---- */
+@font-face { font-family:'Discovery'; font-weight:100; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Thin.ttf') format('truetype'); }
+@font-face { font-family:'Discovery'; font-weight:200; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Ultralight.ttf') format('truetype'); }
+@font-face { font-family:'Discovery'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Light.ttf') format('truetype'); }
+@font-face { font-family:'Discovery'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Regular.ttf') format('truetype'); }
+@font-face { font-family:'Discovery'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Medium.ttf') format('truetype'); }
+@font-face { font-family:'Discovery'; font-weight:600; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Demibold.ttf') format('truetype'); }
+@font-face { font-family:'Discovery'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Bold.ttf') format('truetype'); }
+@font-face { font-family:'Discovery'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Discovery/Discovery_Fs-Black.ttf') format('truetype'); }
+
+/* ---- Duckas ---- */
+@font-face { font-family:'Duckas'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Duckas/Fb%20Duckas.otf') format('opentype'); }
+@font-face { font-family:'Duckas'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('/fonts/Duckas/Fb%20Duckas%20Medium.otf') format('opentype'); }
+@font-face { font-family:'Duckas'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Duckas/FbDuckas%20Bold.otf') format('opentype'); }
+@font-face { font-family:'Duckas'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Duckas/Fb%20Duckas%20Black.otf') format('opentype'); }
+
+/* ---- Galil V2 (woff2) ---- */
+@font-face { font-family:'Galil'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/Font%20Galil%20-%20V2/Galil%20-%20Light/Galil%20V2%20-%20Light.woff2') format('woff2'); }
+@font-face { font-family:'Galil'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Font%20Galil%20-%20V2/Galil%20-%20Regular/Galil%20V2%20-%20Regular.woff2') format('woff2'); }
+@font-face { font-family:'Galil'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('/fonts/Font%20Galil%20-%20V2/Galil%20-%20Medium/Galil%20V2%20-%20Medium.woff2') format('woff2'); }
+@font-face { font-family:'Galil'; font-weight:600; font-style:normal; font-display:swap;
+  src:url('/fonts/Font%20Galil%20-%20V2/Galil%20-%20SemiBold/Galil%20V2%20-%20SemiBold.woff2') format('woff2'); }
+@font-face { font-family:'Galil'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Font%20Galil%20-%20V2/Galil%20-%20Bold/Galil%20V2%20-%20Bold.woff2') format('woff2'); }
+@font-face { font-family:'Galil'; font-weight:800; font-style:normal; font-display:swap;
+  src:url('/fonts/Font%20Galil%20-%20V2/Galil%20-%20ExtraBold/Galil%20V2%20-%20ExtraBold.woff2') format('woff2'); }
+
+/* ---- Krisperv (מודגש בלבד — שאר הקבצים דקורטיביים) ---- */
+@font-face { font-family:'Krisperv'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Krisperv/Krisperv2FM-Bold.ttf') format('truetype'); }
+@font-face { font-family:'Krisperv'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Krisperv/Krisperv2FM-Bold.ttf') format('truetype'); }
+
+/* ---- Leon ---- */
+@font-face { font-family:'Leon'; font-weight:100; font-style:normal; font-display:swap;
+  src:url('/fonts/Leon/Leon-Thin.otf') format('opentype'); }
+@font-face { font-family:'Leon'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Leon/Leon-Regular.otf') format('opentype'); }
+@font-face { font-family:'Leon'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Leon/Leon-Bold.otf') format('opentype'); }
+@font-face { font-family:'Leon'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Leon/Leon-Heavy.otf') format('opentype'); }
+
+/* ---- Lia Kaha ---- */
+@font-face { font-family:'Lia Kaha'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/LiaKahaItorarti-Regular/LiaKahaItorarti-Light.ttf') format('truetype'); }
+@font-face { font-family:'Lia Kaha'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/LiaKahaItorarti-Regular/LiaKahaItorarti-Regular.ttf') format('truetype'); }
+@font-face { font-family:'Lia Kaha'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/LiaKahaItorarti-Regular/LiaKahaItorarti-Bold.ttf') format('truetype'); }
+@font-face { font-family:'Lia Kaha'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/LiaKahaItorarti-Regular/LiaKahaItorarti-Black.ttf') format('truetype'); }
+
+/* ---- Motaleh (מודגש בלבד) ---- */
+@font-face { font-family:'Motaleh'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Motaleh/MotalehFM-Bold.ttf') format('truetype'); }
+@font-face { font-family:'Motaleh'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Motaleh/MotalehFM-Bold.ttf') format('truetype'); }
+
+/* ---- Placebo ---- */
+@font-face { font-family:'Placebo'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Placebo/PlaceboFM-Regular.ttf') format('truetype'); }
+@font-face { font-family:'Placebo'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Placebo/PlaceboFM-Bold.ttf') format('truetype'); }
+
+/* ---- Primaries ---- */
+@font-face { font-family:'Primaries'; font-weight:200; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-ultralight-aaa.otf') format('opentype'); }
+@font-face { font-family:'Primaries'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-light-aaa.otf') format('opentype'); }
+@font-face { font-family:'Primaries'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-regular-aaa.otf') format('opentype'); }
+@font-face { font-family:'Primaries'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-medium-aaa.otf') format('opentype'); }
+@font-face { font-family:'Primaries'; font-weight:600; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-demibold-aaa.otf') format('opentype'); }
+@font-face { font-family:'Primaries'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-bold-aaa.otf') format('opentype'); }
+@font-face { font-family:'Primaries'; font-weight:800; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-ultrabold-aaa.otf') format('opentype'); }
+@font-face { font-family:'Primaries'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Primaries/primaries-black-aaa.otf') format('opentype'); }
+
+/* ---- Proxima Nova Hebrew ---- */
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:100; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Thin.otf') format('opentype'); }
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Light.otf') format('opentype'); }
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Regular.otf') format('opentype'); }
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Medium.otf') format('opentype'); }
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:600; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Semibold.otf') format('opentype'); }
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Bold.otf') format('opentype'); }
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:800; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Extrabold.otf') format('opentype'); }
+@font-face { font-family:'Proxima Nova Hebrew'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Proxima%20Nova%20Hebrew/Proxima%20Nova%20Hebrew%20Black.otf') format('opentype'); }
+
+/* ---- Rag Marom Poster ---- */
+@font-face { font-family:'Rag Marom Poster'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/RagMaromPoster/RagMaromPoster-Regular.ttf') format('truetype'); }
+
+/* ---- Ravitzky (מודגש בלבד) ---- */
+@font-face { font-family:'Ravitzky'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Ravitzky/RavitzkyFM-Bold.ttf') format('truetype'); }
+@font-face { font-family:'Ravitzky'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Ravitzky/RavitzkyFM-Bold.ttf') format('truetype'); }
+
+/* ---- Trampolina ---- */
+@font-face { font-family:'Trampolina'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/Trampolina/Fb%20Trampolina%20Light.otf') format('opentype'); }
+@font-face { font-family:'Trampolina'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Trampolina/Fb%20Trampolina.otf') format('opentype'); }
+@font-face { font-family:'Trampolina'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/Trampolina/FbTrampolina%20Bold.otf') format('opentype'); }
+@font-face { font-family:'Trampolina'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Trampolina/Fb%20Trampolina%20Black.otf') format('opentype'); }
+
+/* ---- Zvulun ---- */
+@font-face { font-family:'Zvulun'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Zvulun/ZvulunFM-Regular.ttf') format('truetype'); }
+@font-face { font-family:'Zvulun'; font-weight:900; font-style:normal; font-display:swap;
+  src:url('/fonts/Zvulun/ZvulunFM-Black.ttf') format('truetype'); }
+
+/* ---- Taamula ---- */
+@font-face { font-family:'Taamula'; font-weight:200; font-style:normal; font-display:swap;
+  src:url('/fonts/taamula/taamula-ultralight-aaa.otf') format('opentype'); }
+@font-face { font-family:'Taamula'; font-weight:300; font-style:normal; font-display:swap;
+  src:url('/fonts/taamula/taamula-light-aaa.otf') format('opentype'); }
+@font-face { font-family:'Taamula'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/taamula/taamula-regular-aaa.otf') format('opentype'); }
+@font-face { font-family:'Taamula'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('/fonts/taamula/taamula-medium-aaa.otf') format('opentype'); }
+@font-face { font-family:'Taamula'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('/fonts/taamula/taamula-bold-aaa.otf') format('opentype'); }
+@font-face { font-family:'Taamula'; font-weight:800; font-style:normal; font-display:swap;
+  src:url('/fonts/taamula/taamula-ultrabold-aaa.otf') format('opentype'); }
+
+/* ---- Shilgiya ---- */
+@font-face { font-family:'Shilgiya'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('/fonts/Shilgiya/Shilgiya-Regular.otf') format('opentype'); }
