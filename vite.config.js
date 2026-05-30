@@ -7,6 +7,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // We register the SW ourselves in main.jsx so we can add periodic +
+      // on-focus update checks (a phone keeps the PWA backgrounded, so the
+      // default "check on full launch" almost never fires).
+      injectRegister: false,
+      workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         name: 'קורות — CV Builder',
         short_name: 'קורות',
