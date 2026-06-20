@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { DEFAULT_STATE, FONT_PRESETS, I18N } from './data.js';
+import { ENTRY_KEYS, entryEmpty } from './entryUtils.js';
 import { TemplateRoot } from './templates/index.jsx';
 import Sidebar from './sidebar/Sidebar.jsx';
 import AiPopover from './components/AiPopover.jsx';
@@ -7,33 +8,6 @@ import AutoFit from './components/AutoFit.jsx';
 import Icon from './components/Icon.jsx';
 
 const STORAGE_KEY = 'koroth_cv_state_v1';
-
-// Which fields make an array entry "meaningful". If all of these are blank the
-// entry is considered empty and is auto-removed (dates/location alone don't keep
-// an entry alive — a date with no role is meaningless).
-const ENTRY_KEYS = {
-  experience:   ['role', 'company', 'bullets'],
-  education:    ['degree', 'school', 'description'],
-  projects:     ['name', 'description', 'link', 'tech'],
-  skills:       ['category', 'items'],
-  languages:    ['name', 'level'],
-  certifications: ['name', 'issuer'],
-  awards:       ['name', 'issuer'],
-  volunteering: ['role', 'org', 'description'],
-  publications: ['title', 'venue'],
-};
-
-const isBlank = (v) => {
-  if (v == null) return true;
-  if (Array.isArray(v)) return v.every(isBlank);
-  return String(v).trim() === '';
-};
-
-const entryEmpty = (entry, key) => {
-  const fields = ENTRY_KEYS[key];
-  if (!fields || !entry) return false;
-  return fields.every(f => isBlank(entry[f]));
-};
 
 function loadState() {
   try {
@@ -196,6 +170,10 @@ export default function App() {
         >
           <div
             className="preview-page"
+            // When focus leaves an inline field, clean up any entry the user
+            // added but never filled. schedulePrune defers + checks that no
+            // editable is focused, so this never fires mid-edit.
+            onBlur={schedulePrune}
             style={{
               '--cv-heading': fontPreset.heading,
               '--cv-body': fontPreset.body,

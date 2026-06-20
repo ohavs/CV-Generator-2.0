@@ -459,6 +459,16 @@ input, textarea, select { font-family: inherit; color: inherit; }
   place-items: center;
 }
 .section-row .toggle-vis:hover { background: var(--surface-2); color: var(--ink); }
+.section-row .toggle-vis[data-blocked] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  animation: addShake 0.32s ease;
+}
+@keyframes addShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
 
 /* segmented control */
 .seg {

@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
+import { entryEmpty, isBlank } from '../entryUtils.js';
 
 export default function ContentTab({ state, setState, t }) {
   const lang = state.language;
   const data = state.data[lang];
+  const [blockedKey, setBlockedKey] = useState(null);
 
   const blanks = {
     experience: { company: '', role: '', location: '', start: '', end: '', bullets: [''] },
@@ -13,7 +16,22 @@ export default function ContentTab({ state, setState, t }) {
     certifications: { name: '', issuer: '', date: '' },
   };
 
+  // True when the section already has an entry the user hasn't filled in yet —
+  // we refuse to stack another empty one on top of it.
+  const hasEmpty = (key) => {
+    if (key === 'links') return (data.personal?.links || []).some(l => isBlank(l.url));
+    return (data[key] || []).some(e => entryEmpty(e, key));
+  };
+
   const addItem = (key) => {
+    // Guard: don't let the user pile up blank entries. They must fill the
+    // existing empty one first. Flash a hint instead of silently doing nothing.
+    if (hasEmpty(key)) {
+      setBlockedKey(key);
+      clearTimeout(addItem._t);
+      addItem._t = setTimeout(() => setBlockedKey(null), 2400);
+      return;
+    }
     if (key === 'links') {
       const next = { ...state.data };
       const otherLang = lang === 'he' ? 'en' : 'he';
@@ -35,15 +53,28 @@ export default function ContentTab({ state, setState, t }) {
   const arr = (k) => (data[k] || []).length;
   const linksCount = (data.personal?.links || []).length;
 
-  const QuickAdd = ({ id, label, count }) => (
-    <div className="section-row" style={{ cursor: 'default' }}>
-      <span className="section-label">{label}</span>
-      <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>{count}</span>
-      <button className="toggle-vis" onClick={() => addItem(id)} title="Add">
-        <Icon name="plus" size={14}/>
-      </button>
-    </div>
-  );
+  const QuickAdd = ({ id, label, count }) => {
+    const blocked = blockedKey === id;
+    return (
+      <div className="section-row" style={{ cursor: 'default', flexWrap: 'wrap' }}>
+        <span className="section-label">{label}</span>
+        <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>{count}</span>
+        <button
+          className="toggle-vis"
+          data-blocked={blocked || undefined}
+          onClick={() => addItem(id)}
+          title="Add"
+        >
+          <Icon name="plus" size={14}/>
+        </button>
+        {blocked && (
+          <div style={{ flexBasis: '100%', fontSize: 11, color: 'var(--accent)', marginTop: 4 }}>
+            {lang === 'he' ? 'מלאו קודם את הפריט הריק שכבר נוסף' : 'Fill the empty item you already added first'}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -64,8 +95,8 @@ export default function ContentTab({ state, setState, t }) {
         <h3 className="panel-title">{lang === 'he' ? 'מחיקת פריטים' : 'Remove items'}</h3>
         <div className="panel-card" style={{ fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.55 }}>
           {lang === 'he'
-            ? 'לחצו על כפתור המחיקה שמופיע בעת ריחוף על פריט בתצוגה המקדימה.'
-            : 'Hover any item in the preview to reveal a delete button.'}
+            ? 'כדי למחוק פריט — מחקו את הטקסט שבו בתצוגה המקדימה. ברגע שהוא נשאר ריק, הוא יוסר אוטומטית. פריטים ריקים שלא מילאתם נמחקים מעצמם.'
+            : 'To remove an item, clear its text in the preview. Once it’s empty it’s removed automatically — blank items you never filled clean themselves up.'}
         </div>
       </div>
 
