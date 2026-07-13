@@ -578,35 +578,98 @@ input, textarea, select { font-family: inherit; color: inherit; }
   pointer-events: none;
 }
 
-/* AI popover */
-.ai-pop {
-  position: fixed;
-  display: flex;
-  gap: 3px;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 999px;
-  padding: 4px;
-  box-shadow: var(--shadow-lg);
-  font-size: 12px;
-  z-index: 500;
-  animation: pop-in 0.18s var(--ease-out);
+/* highlight for the element being edited via the mobile edit bar */
+[data-editable][data-editing="true"] {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: 3px;
 }
-.ai-pop button {
+
+/* mobile edit bar — pinned to the TOP so the keyboard never covers it */
+.mobile-edit-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 600;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  padding: 10px 14px calc(12px + env(safe-area-inset-top, 0px) * 0);
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  animation: slide-down 0.22s var(--ease-out);
+}
+@keyframes slide-down {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+.mobile-edit-bar-head {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 11px;
-  border-radius: 999px;
-  color: var(--bg);
-  font-weight: 500;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.mobile-edit-bar-label {
   font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.ai-pop button:hover { background: rgba(255,255,255,0.14); }
-@keyframes pop-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.95); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+.mobile-edit-bar textarea {
+  width: 100%;
+  font-size: 16px; /* ≥16px so iOS doesn't zoom the page on focus */
+  line-height: 1.45;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  color: var(--ink);
+  resize: none;
+  outline: none;
 }
+.mobile-edit-bar textarea:focus { border-color: var(--accent); }
+.meb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+}
+.meb-cancel { color: var(--ink-3); background: var(--surface-2); }
+.meb-done { color: var(--bg); background: var(--accent); }
+
+/* while the edit bar is open, hide floating chrome */
+body[data-mobile-editing] .mobile-cta,
+body[data-mobile-editing] .zoom-badge { display: none !important; }
+
+/* ghost add-line at the end of bullet lists — shown only when every line is
+   filled; hidden in print/export */
+.bullet-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+  color: color-mix(in srgb, currentColor 38%, transparent);
+  cursor: pointer;
+  padding: 1px 0;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.bullet-add:hover { color: color-mix(in srgb, currentColor 70%, transparent); }
+/* on hover-capable devices keep the page clean — reveal on section hover */
+@media (hover: hover) {
+  .bullet-add { opacity: 0; transition: opacity 0.15s; }
+  [data-bullet-list]:hover .bullet-add, .bullet-add:focus-visible { opacity: 1; }
+}
+
+/* reorder arrows in the sections list */
+.reorder-btns { display: inline-flex; gap: 0; }
+.reorder-btns .toggle-vis:disabled { opacity: 0.25; cursor: default; }
 
 /* generic buttons */
 .btn {
@@ -702,7 +765,9 @@ input[type="range"]::-webkit-slider-thumb {
 @media print {
   body { background: white !important; overflow: visible !important; }
   .app { display: block !important; height: auto !important; }
-  .sidebar, .zoom-badge, .mobile-cta, .ai-pop, .sheet-backdrop { display: none !important; }
+  .sidebar, .zoom-badge, .mobile-cta, .mobile-edit-bar, .sheet-backdrop { display: none !important; }
+  .bullet-add { display: none !important; }
+  [data-editable][data-editing="true"] { background: transparent !important; box-shadow: none !important; }
   .preview-area { padding: 0 !important; overflow: visible !important; background: white !important; background-image: none !important; }
   .preview-stage { zoom: 1 !important; transform: none !important; }
   /* Keep height + overflow: hidden so the page NEVER prints beyond one A4 page */

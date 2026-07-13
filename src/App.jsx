@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { DEFAULT_STATE, FONT_PRESETS, I18N } from './data.js';
-import { ENTRY_KEYS, entryEmpty } from './entryUtils.js';
+import { pruneLangData } from './entryUtils.js';
 import { TemplateRoot } from './templates/index.jsx';
 import Sidebar from './sidebar/Sidebar.jsx';
-import AiPopover from './components/AiPopover.jsx';
 import AutoFit from './components/AutoFit.jsx';
+import MobileEditBar from './components/MobileEditBar.jsx';
+import { useIsMobile } from './components/Editable.jsx';
 import Icon from './components/Icon.jsx';
 
 const STORAGE_KEY = 'koroth_cv_state_v1';
@@ -55,25 +56,20 @@ export default function App() {
 
   const pruneTimerRef = useRef(null);
 
-  // Remove fully-empty entries — but only once the user has finished editing
-  // (focus has left every editable field). Deferring + the focus guard means we
-  // never delete an entry mid-edit and never steal the caret.
+  // Remove empty entries / blank bullet lines / abandoned links — but only
+  // once the user has finished editing: no contenteditable focused, and the
+  // mobile edit bar closed. Deferring + these guards means we never delete an
+  // entry mid-edit and never steal the caret.
   const schedulePrune = useCallback(() => {
     clearTimeout(pruneTimerRef.current);
     pruneTimerRef.current = setTimeout(() => {
-      if (document.activeElement?.isContentEditable) return; // still editing
+      if (document.activeElement?.isContentEditable) return;          // caret editing
+      if (document.body.hasAttribute('data-mobile-editing')) return;  // edit bar open
       setStateRaw(prev => {
         const lang = prev.language;
-        const langData = { ...prev.data[lang] };
-        let changed = false;
-        for (const key of Object.keys(ENTRY_KEYS)) {
-          const arr = langData[key];
-          if (!Array.isArray(arr) || arr.length === 0) continue;
-          const pruned = arr.filter(e => !entryEmpty(e, key));
-          if (pruned.length !== arr.length) { langData[key] = pruned; changed = true; }
-        }
-        if (!changed) return prev;
-        const next = { ...prev, data: { ...prev.data, [lang]: langData } };
+        const cleaned = pruneLangData(prev.data[lang]);
+        if (!cleaned) return prev;
+        const next = { ...prev, data: { ...prev.data, [lang]: cleaned } };
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
         return next;
       });
@@ -95,6 +91,36 @@ export default function App() {
     });
     schedulePrune();
   }, [schedulePrune]);
+
+  const isMobile = useIsMobile();
+
+  // When the mobile edit bar closes (commit or cancel), clean up leftovers.
+  useEffect(() => {
+    window.addEventListener('cv-edit-closed', schedulePrune);
+    return () => window.removeEventListener('cv-edit-closed', schedulePrune);
+  }, [schedulePrune]);
+
+  // After adding an item from the sidebar (or when blocked on an existing
+  // empty one): close the sheet, scroll the preview to that section, and open
+  // its first unfilled field — no hunting for where the new item landed.
+  const jumpToSection = useCallback((key) => {
+    setMobileOpen(false);
+    setTimeout(() => {
+      const section = document.querySelector(`.preview-page [data-section="${key}"]`)
+        || document.querySelector('.preview-page');
+      if (!section) return;
+      const editables = [...section.querySelectorAll('[data-editable]')];
+      // A fresh entry is a trailing run of empty fields — target the first
+      // empty field after the last filled one.
+      let lastFilled = -1;
+      editables.forEach((el, i) => { if (el.getAttribute('data-empty') !== 'true') lastFilled = i; });
+      const target = editables.slice(lastFilled + 1).find(el => el.getAttribute('data-empty') === 'true')
+        || editables.find(el => el.getAttribute('data-empty') === 'true');
+      (target || section).scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (!target) return;
+      setTimeout(() => { if (isMobile) target.click(); else target.focus(); }, 380);
+    }, 200);
+  }, [isMobile]);
 
   /* Scale-to-fit */
   const previewAreaRef = useRef(null);
@@ -197,7 +223,7 @@ export default function App() {
           </div>
         </div>
 
-        <AiPopover language={state.language}/>
+        <MobileEditBar lang={state.language}/>
 
         <div className="zoom-badge">
           <button onClick={() => setZoom(z => Math.max(0.2, (z || autoZoom) - 0.1))} title="Zoom out">
@@ -225,6 +251,7 @@ export default function App() {
         isMobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
         onExport={handleExport}
+        onAddJump={jumpToSection}
         saving={saving}
       />
     </div>

@@ -12,7 +12,7 @@ export default function SectionsTab({ state, setState, t }) {
   };
 
   const move = (from, to) => {
-    if (from === to) return;
+    if (from === to || to < 0 || to >= state.sections.length) return;
     const next = [...state.sections];
     const [item] = next.splice(from, 1);
     next.splice(to, 0, item);
@@ -22,7 +22,7 @@ export default function SectionsTab({ state, setState, t }) {
   return (
     <>
       <div className="panel-group">
-        <h3 className="panel-title">{lang === 'he' ? 'גרירה לסידור · עין להסתרה' : 'Drag to reorder · eye to hide'}</h3>
+        <h3 className="panel-title">{lang === 'he' ? 'סדר ותצוגת חלקים' : 'Order & visibility'}</h3>
         <div className="section-list">
           {state.sections.map((s, i) => (
             <div
@@ -37,7 +37,15 @@ export default function SectionsTab({ state, setState, t }) {
               onDrop={(e) => { e.preventDefault(); if (draggingIdx != null) move(draggingIdx, i); }}
               style={hoverIdx === i && draggingIdx !== null ? { borderColor: 'var(--accent)' } : {}}
             >
-              <span className="drag-handle"><Icon name="drag" size={14}/></span>
+              {/* Arrows work everywhere (drag doesn't exist on touch) */}
+              <span className="reorder-btns">
+                <button className="toggle-vis" disabled={i === 0} onClick={() => move(i, i - 1)} title="Up">
+                  <Icon name="chevron-up" size={13}/>
+                </button>
+                <button className="toggle-vis" disabled={i === state.sections.length - 1} onClick={() => move(i, i + 1)} title="Down">
+                  <Icon name="chevron-down" size={13}/>
+                </button>
+              </span>
               <span className="section-label">{t.sections[s.id]}</span>
               <button className="toggle-vis" onClick={() => toggleVis(i)} title={s.visible ? 'Hide' : 'Show'}>
                 <Icon name={s.visible ? 'eye' : 'eye-off'} size={14}/>
@@ -45,14 +53,8 @@ export default function SectionsTab({ state, setState, t }) {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="panel-group">
-        <h3 className="panel-title">{lang === 'he' ? 'הוספה ושינוי' : 'Add & manage'}</h3>
-        <div className="panel-card" style={{ fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.55 }}>
-          {lang === 'he'
-            ? 'לעריכה — לחצו על כל טקסט בתצוגה המקדימה. להוספת פריטים חדשים — בלשונית "תוכן".'
-            : 'To edit — click any text in the preview. To add new items — use the "Content" tab.'}
+        <div style={{ fontSize: 11.5, color: 'var(--ink-4)', marginTop: 8, lineHeight: 1.5 }}>
+          {lang === 'he' ? 'חצים לשינוי סדר · עין להצגה/הסתרה' : 'Arrows to reorder · eye to show/hide'}
         </div>
       </div>
     </>

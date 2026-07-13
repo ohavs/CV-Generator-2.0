@@ -141,22 +141,6 @@ function DesignTab({ state, setState, t }) {
         </div>
       </div>
 
-      {/* API Key */}
-      <div className="panel-group">
-        <h3 className="panel-title">Anthropic API Key (AI)</h3>
-        <div className="panel-card">
-          <input
-            type="password"
-            defaultValue={localStorage.getItem('anthropic_api_key') || ''}
-            placeholder="sk-ant-..."
-            onChange={(e) => localStorage.setItem('anthropic_api_key', e.target.value)}
-            style={{ width: '100%', border: 'none', background: 'transparent', fontSize: 13, color: 'var(--ink-2)', outline: 'none', padding: '2px 0' }}
-          />
-          <div style={{ fontSize: 11, color: 'var(--ink-4)', marginTop: 6 }}>
-            {lang === 'he' ? 'נדרש לתכונת שיפור הניסוחים (AI)' : 'Required for AI text rewriting'}
-          </div>
-        </div>
-      </div>
     </>
   );
 }

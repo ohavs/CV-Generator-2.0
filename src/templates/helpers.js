@@ -15,7 +15,6 @@ export function makeField(data, onEdit) {
     onChange: (v) => onEdit(path, v),
     multiline: opts.multiline,
     placeholder: opts.placeholder,
-    enableAi: opts.ai,
   });
 }
 

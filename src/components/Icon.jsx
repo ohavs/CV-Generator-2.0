@@ -53,6 +53,8 @@ export default function Icon({ name, size = 16, strokeWidth = 1.75, style }) {
       return <svg {...common}><path d="M6 6l12 12M6 18 18 6"/></svg>;
     case 'chevron-down':
       return <svg {...common}><path d="m6 9 6 6 6-6"/></svg>;
+    case 'chevron-up':
+      return <svg {...common}><path d="m6 15 6-6 6 6"/></svg>;
     case 'edit':
       return <svg {...common}><path d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>;
     case 'zoom-in':
