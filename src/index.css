@@ -247,6 +247,82 @@ input, textarea, select { font-family: inherit; color: inherit; }
 }
 .brand-sub { font-size: 12px; color: var(--ink-4); letter-spacing: 0.04em; text-transform: uppercase; }
 
+/* documents (multi-CV) switcher */
+.docs-menu { position: relative; padding: 10px 12px 0; }
+.docs-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: border-color 0.12s, background 0.12s;
+}
+.docs-trigger:hover { background: var(--surface-2); }
+.docs-current { flex: 1; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.docs-count {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700;
+}
+.docs-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 12px;
+  inset-inline-end: 12px;
+  z-index: 40;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 8px;
+  animation: docs-pop 0.12s ease-out;
+}
+@keyframes docs-pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.docs-panel-title { font-size: 11px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 8px 8px; }
+.docs-list { display: flex; flex-direction: column; gap: 2px; max-height: 46vh; overflow-y: auto; }
+.docs-row {
+  display: flex; align-items: center; gap: 4px;
+  border-radius: 9px;
+  padding: 2px;
+}
+.docs-row[data-active="true"] { background: var(--surface-2); }
+.docs-row-main {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  padding: 6px 8px; border-radius: 7px;
+  text-align: start;
+}
+.docs-row-main:hover { background: var(--surface-2); }
+.docs-row-name { font-size: 13.5px; font-weight: 600; color: var(--ink); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.docs-row-meta { font-size: 11px; color: var(--ink-3); }
+.docs-row-actions { display: flex; gap: 1px; flex-shrink: 0; }
+.docs-row-actions button { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; color: var(--ink-3); }
+.docs-row-actions button:hover { background: var(--surface); color: var(--ink); }
+.docs-row-actions .docs-del:hover { color: #d64545; }
+.docs-rename-input {
+  flex: 1; min-width: 0;
+  padding: 7px 8px; border-radius: 7px;
+  border: 1px solid var(--accent);
+  background: var(--bg-elevated); color: var(--ink);
+  font-size: 13.5px; font-weight: 600;
+}
+.docs-new {
+  width: 100%; margin-top: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px; border-radius: 9px;
+  border: 1px dashed var(--border);
+  color: var(--accent); font-size: 13px; font-weight: 600;
+}
+.docs-new:hover { background: var(--surface-2); border-style: solid; }
+
 .sidebar-tabs {
   display: flex;
   gap: 3px;

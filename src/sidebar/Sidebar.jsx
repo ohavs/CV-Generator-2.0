@@ -4,6 +4,7 @@ import Icon from '../components/Icon.jsx';
 import DesignTab from './DesignTab.jsx';
 import SectionsTab from './SectionsTab.jsx';
 import ContentTab from './ContentTab.jsx';
+import DocsMenu from './DocsMenu.jsx';
 
 function SaveBadge({ saving, t }) {
   return (
@@ -16,7 +17,7 @@ function SaveBadge({ saving, t }) {
 
 const startOnMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches;
 
-export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, onExport, exporting, onAddJump, onUndo, onRedo, canUndo, canRedo, saving }) {
+export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, onExport, exporting, onAddJump, onUndo, onRedo, canUndo, canRedo, saving, docs, activeId, onSwitchDoc, onNewDoc, onRenameDoc, onDuplicateDoc, onDeleteDoc }) {
   const t = I18N[state.language];
   // On phones people open the sheet mostly to edit content; on desktop the
   // panel is always visible and design-first is the better entry point.
@@ -73,6 +74,17 @@ export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, 
           </button>
         </div>
       </div>
+
+      <DocsMenu
+        docs={docs}
+        activeId={activeId}
+        lang={state.language}
+        onSwitch={onSwitchDoc}
+        onNew={onNewDoc}
+        onRename={onRenameDoc}
+        onDuplicate={onDuplicateDoc}
+        onDelete={onDeleteDoc}
+      />
 
       <div className="sidebar-tabs">
         <button className="tab-btn" data-active={tab === 'content'} onClick={() => setTab('content')}>

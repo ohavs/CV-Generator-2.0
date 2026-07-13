@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback, useReducer } from 'react';
 import { DEFAULT_STATE, FONT_PRESETS, I18N } from './data.js';
 import { pruneLangData } from './entryUtils.js';
+import { loadStore, saveStore, activeDoc, docList, freshDoc, docName } from './docStore.js';
 import { TemplateRoot } from './templates/index.jsx';
 import Sidebar from './sidebar/Sidebar.jsx';
 import AutoFit from './components/AutoFit.jsx';
@@ -8,23 +9,8 @@ import MobileEditBar from './components/MobileEditBar.jsx';
 import { useIsMobile } from './components/Editable.jsx';
 import Icon from './components/Icon.jsx';
 
-const STORAGE_KEY = 'koroth_cv_state_v1';
 const perfNow = () => (typeof performance !== 'undefined' ? performance.now() : 0);
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_STATE;
-    const parsed = JSON.parse(raw);
-    return {
-      ...DEFAULT_STATE,
-      ...parsed,
-      data: { ...DEFAULT_STATE.data, ...(parsed.data || {}) },
-    };
-  } catch (e) {
-    return DEFAULT_STATE;
-  }
-}
+const EMPTY_HISTORY = () => ({ past: [], future: [], lastKey: null, lastAt: 0 });
 
 function setIn(obj, path, value) {
   if (path.length === 0) return value;
@@ -45,7 +31,15 @@ function changedKeys(a, b) {
 }
 
 export default function App() {
-  const [state, setStateRaw] = useState(() => loadState());
+  // The whole document collection lives in a ref (source of truth for
+  // persistence); the active document's state is mirrored into React state for
+  // editing, history and rendering.
+  const storeRef = useRef();
+  if (storeRef.current === undefined) storeRef.current = loadStore();
+
+  const [state, setStateRaw] = useState(() => activeDoc(storeRef.current).state);
+  const [docs, setDocs] = useState(() => docList(storeRef.current));
+  const [activeId, setActiveId] = useState(() => storeRef.current.activeId);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [zoom, setZoom] = useState(null);
@@ -54,23 +48,28 @@ export default function App() {
   const saveTimerRef = useRef(null);
   const pruneTimerRef = useRef(null);
 
-  // stateRef mirrors the live state so history/commit logic can read the
-  // freshest value without stale closures — and without doing side effects
-  // inside a functional updater (which React StrictMode double-invokes).
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; });
+
+  // Write the given state into the active document and flush the collection.
+  const writeActive = useCallback((next) => {
+    const store = storeRef.current;
+    const id = store.activeId;
+    store.docs = store.docs.map(d => d.id === id ? { ...d, state: next, updatedAt: Date.now() } : d);
+    saveStore(store);
+  }, []);
 
   const persist = useCallback((next, delay = 500) => {
     clearTimeout(saveTimerRef.current);
     setSaving(true);
     saveTimerRef.current = setTimeout(() => {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
+      writeActive(next);
       setSaving(false);
     }, delay);
-  }, []);
+  }, [writeActive]);
 
-  // The one place state is actually written. Updates the mirror eagerly so the
-  // next change/undo reads this value even before React re-renders.
+  // The one place the working state is written. Updates the mirror eagerly so
+  // the next change/undo reads this value even before React re-renders.
   const commit = useCallback((next, saveDelay) => {
     stateRef.current = next;
     setStateRaw(next);
@@ -78,7 +77,7 @@ export default function App() {
   }, [persist]);
 
   /* ---- Undo / redo history ---------------------------------------------- */
-  const historyRef = useRef({ past: [], future: [], lastKey: null, lastAt: 0 });
+  const historyRef = useRef(EMPTY_HISTORY());
   const [, bumpHist] = useReducer((x) => x + 1, 0);
 
   const pushPast = useCallback((prev, coalesceKey) => {
@@ -98,7 +97,6 @@ export default function App() {
   const undo = useCallback(() => {
     const h = historyRef.current;
     if (!h.past.length) return;
-    // Flush any in-progress caret edit first so it becomes its own step.
     const ae = document.activeElement;
     if (ae && ae.isContentEditable) ae.blur();
     if (!h.past.length) return;
@@ -123,14 +121,12 @@ export default function App() {
   const canRedo = historyRef.current.future.length > 0;
 
   /* ---- State mutations (all record history) ----------------------------- */
-  // Sidebar / design controls hand us a fully-formed next state.
   const setState = useCallback((next) => {
     const prev = stateRef.current;
     pushPast(prev, 'set:' + (changedKeys(prev, next) || 'all'));
     commit(next);
   }, [pushPast, commit]);
 
-  // Inline field edits from the templates.
   const onEdit = useCallback((path, value) => {
     const prev = stateRef.current;
     const lang = prev.language;
@@ -142,10 +138,6 @@ export default function App() {
     schedulePrune();
   }, [pushPast, commit]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Remove empty entries / blank bullet lines / abandoned links — but only
-  // once the user has finished editing: no contenteditable focused, and the
-  // mobile edit bar closed. Automatic cleanup is intentionally NOT an undo
-  // step (undoing to restore a blank row the user abandoned is just noise).
   const schedulePrune = useCallback(() => {
     clearTimeout(pruneTimerRef.current);
     pruneTimerRef.current = setTimeout(() => {
@@ -155,11 +147,90 @@ export default function App() {
       const lang = prev.language;
       const cleaned = pruneLangData(prev.data[lang]);
       if (!cleaned) return;
-      // Pruning is a settled action — persist immediately (like the old path)
-      // so a quick app close can't lose the cleanup.
+      // Pruning is a settled action — persist immediately so a quick app close
+      // can't lose the cleanup. Not an undo step (removing an abandoned blank
+      // row that the user never filled is just noise in the history).
       commit({ ...prev, data: { ...prev.data, [lang]: cleaned } }, 0);
     }, 250);
   }, [commit]);
+
+  /* ---- Document management ---------------------------------------------- */
+  // Save the live working state into its document before we swap documents.
+  const flushActive = useCallback(() => {
+    clearTimeout(saveTimerRef.current);
+    writeActive(stateRef.current);
+  }, [writeActive]);
+
+  const loadDoc = useCallback((doc) => {
+    historyRef.current = EMPTY_HISTORY();
+    bumpHist();
+    stateRef.current = doc.state;
+    setStateRaw(doc.state);
+    setActiveId(doc.id);
+    setSaving(false);
+  }, []);
+
+  const switchDoc = useCallback((id) => {
+    if (id === storeRef.current.activeId) return;
+    flushActive();
+    const store = storeRef.current;
+    const target = store.docs.find(d => d.id === id);
+    if (!target) return;
+    store.activeId = id;
+    saveStore(store);
+    setDocs(docList(store));
+    loadDoc(target);
+  }, [flushActive, loadDoc]);
+
+  const newDoc = useCallback(() => {
+    flushActive();
+    const store = storeRef.current;
+    const uiLang = stateRef.current.language;
+    const doc = freshDoc({ ...DEFAULT_STATE, language: uiLang }, uiLang === 'en' ? 'New CV' : 'קורות חיים חדשים');
+    store.docs = [...store.docs, doc];
+    store.activeId = doc.id;
+    saveStore(store);
+    setDocs(docList(store));
+    loadDoc(doc);
+    setMobileOpen(false);
+  }, [flushActive, loadDoc]);
+
+  const duplicateDoc = useCallback((id) => {
+    flushActive();
+    const store = storeRef.current;
+    const src = store.docs.find(d => d.id === id);
+    if (!src) return;
+    const suffix = src.state.language === 'en' ? ' (copy)' : ' (עותק)';
+    const copy = freshDoc(src.state, src.name + suffix);
+    store.docs = [...store.docs, copy];
+    store.activeId = copy.id;
+    saveStore(store);
+    setDocs(docList(store));
+    loadDoc(copy);
+  }, [flushActive, loadDoc]);
+
+  const renameDoc = useCallback((id, name) => {
+    const store = storeRef.current;
+    const clean = (name || '').trim();
+    store.docs = store.docs.map(d => d.id === id ? { ...d, name: clean || d.name } : d);
+    saveStore(store);
+    setDocs(docList(store));
+  }, []);
+
+  const deleteDoc = useCallback((id) => {
+    const store = storeRef.current;
+    const wasActive = store.activeId === id;
+    let list = store.docs.filter(d => d.id !== id);
+    if (!list.length) {
+      const uiLang = stateRef.current.language;
+      list = [freshDoc({ ...DEFAULT_STATE, language: uiLang }, uiLang === 'en' ? 'New CV' : 'קורות חיים חדשים')];
+    }
+    store.docs = list;
+    if (wasActive) store.activeId = list[0].id;
+    saveStore(store);
+    setDocs(docList(store));
+    if (wasActive) loadDoc(activeDoc(store));
+  }, [loadDoc]);
 
   const data = state.data[state.language];
   const fontPreset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
@@ -228,15 +299,14 @@ export default function App() {
     try {
       // Lazy-loaded so jsPDF + html-to-image stay out of the initial bundle.
       const { exportPdf } = await import('./pdfExport.js');
-      const base = (data?.name || (state.language === 'he' ? 'קורות-חיים' : 'cv')).trim().replace(/\s+/g, '-');
+      const base = docName(stateRef.current).trim().replace(/\s+/g, '-');
       await exportPdf(`${base || 'cv'}.pdf`);
     } catch (e) {
-      // If canvas capture fails for any reason, fall back to the print dialog.
       window.print();
     } finally {
       setExporting(false);
     }
-  }, [exporting, data, state.language]);
+  }, [exporting]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -339,6 +409,13 @@ export default function App() {
         canUndo={canUndo}
         canRedo={canRedo}
         saving={saving}
+        docs={docs}
+        activeId={activeId}
+        onSwitchDoc={switchDoc}
+        onNewDoc={newDoc}
+        onRenameDoc={renameDoc}
+        onDuplicateDoc={duplicateDoc}
+        onDeleteDoc={deleteDoc}
       />
     </div>
   );
