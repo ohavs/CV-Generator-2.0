@@ -150,6 +150,35 @@ input, textarea, select { font-family: inherit; color: inherit; }
   font-size: 12px;
 }
 
+/* undo / redo — mirrors the zoom badge, pinned to the top-start corner */
+.history-badge {
+  position: absolute;
+  top: 16px;
+  inset-inline-start: 16px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+.history-badge button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--ink-2);
+  transition: background 0.12s, color 0.12s;
+}
+.history-badge button:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); }
+.history-badge button:disabled { opacity: 0.35; cursor: default; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* mobile cta */
 .mobile-cta {
   display: none;
@@ -644,7 +673,8 @@ input, textarea, select { font-family: inherit; color: inherit; }
 
 /* while the edit bar is open, hide floating chrome */
 body[data-mobile-editing] .mobile-cta,
-body[data-mobile-editing] .zoom-badge { display: none !important; }
+body[data-mobile-editing] .zoom-badge,
+body[data-mobile-editing] .history-badge { display: none !important; }
 
 /* ghost add-line at the end of bullet lists — shown only when every line is
    filled; hidden in print/export */
@@ -765,7 +795,7 @@ input[type="range"]::-webkit-slider-thumb {
 @media print {
   body { background: white !important; overflow: visible !important; }
   .app { display: block !important; height: auto !important; }
-  .sidebar, .zoom-badge, .mobile-cta, .mobile-edit-bar, .sheet-backdrop { display: none !important; }
+  .sidebar, .zoom-badge, .history-badge, .mobile-cta, .mobile-edit-bar, .sheet-backdrop { display: none !important; }
   .bullet-add { display: none !important; }
   [data-editable][data-editing="true"] { background: transparent !important; box-shadow: none !important; }
   .preview-area { padding: 0 !important; overflow: visible !important; background: white !important; background-image: none !important; }
@@ -778,3 +808,12 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* CV page print color */
 .preview-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* While capturing a PDF, strip every editing affordance so the snapshot is a
+   clean document — mirrors the @media print rules. */
+body[data-exporting] .bullet-add,
+body[data-exporting] .array-remove,
+body[data-exporting] [data-add-inline] { display: none !important; }
+body[data-exporting] [data-editable][data-empty="true"]::before,
+body[data-exporting] [data-editable]:empty::before { content: '' !important; }
+body[data-exporting] [data-editable] { background: transparent !important; box-shadow: none !important; outline: none !important; }

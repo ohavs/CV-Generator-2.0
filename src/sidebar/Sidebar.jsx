@@ -16,7 +16,7 @@ function SaveBadge({ saving, t }) {
 
 const startOnMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches;
 
-export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, onExport, onAddJump, saving }) {
+export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, onExport, exporting, onAddJump, onUndo, onRedo, canUndo, canRedo, saving }) {
   const t = I18N[state.language];
   // On phones people open the sheet mostly to edit content; on desktop the
   // panel is always visible and design-first is the better entry point.
@@ -93,6 +93,14 @@ export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, 
       </div>
 
       <div className="sidebar-footer">
+        <button className="icon-btn" onClick={onUndo} disabled={!canUndo}
+          title={state.language === 'he' ? 'בטל' : 'Undo'}>
+          <Icon name="undo" size={15}/>
+        </button>
+        <button className="icon-btn" onClick={onRedo} disabled={!canRedo}
+          title={state.language === 'he' ? 'בצע שוב' : 'Redo'}>
+          <Icon name="redo" size={15}/>
+        </button>
         <button className="btn btn-ghost" onClick={() => {
           if (confirm(state.language === 'he' ? 'לאפס לדמו ברירת מחדל?' : 'Reset to demo data?')) {
             setState({ ...DEFAULT_STATE });
@@ -101,9 +109,9 @@ export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, 
           <Icon name="trash" size={13}/>
           {state.language === 'he' ? 'איפוס' : 'Reset'}
         </button>
-        <button className="btn btn-primary" onClick={onExport}>
-          <Icon name="download" size={13}/>
-          {t.labels.export}
+        <button className="btn btn-primary" onClick={onExport} disabled={exporting}>
+          <Icon name={exporting ? 'loader' : 'download'} size={13} style={exporting ? { animation: 'spin 0.8s linear infinite' } : undefined}/>
+          {exporting ? (state.language === 'he' ? 'מייצא…' : 'Exporting…') : t.labels.export}
         </button>
       </div>
     </aside>

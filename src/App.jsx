@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect, useCallback, useReducer } from 'react';
 import { DEFAULT_STATE, FONT_PRESETS, I18N } from './data.js';
 import { pruneLangData } from './entryUtils.js';
 import { TemplateRoot } from './templates/index.jsx';
@@ -9,6 +9,7 @@ import { useIsMobile } from './components/Editable.jsx';
 import Icon from './components/Icon.jsx';
 
 const STORAGE_KEY = 'koroth_cv_state_v1';
+const perfNow = () => (typeof performance !== 'undefined' ? performance.now() : 0);
 
 function loadState() {
   try {
@@ -33,64 +34,135 @@ function setIn(obj, path, value) {
   return next;
 }
 
+// Signature of what changed between two states at the top level — lets rapid
+// changes to the same control (e.g. dragging the font-size slider) coalesce
+// into a single undo step instead of one per pixel.
+function changedKeys(a, b) {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  const diff = [];
+  for (const k of keys) if (a[k] !== b[k]) diff.push(k);
+  return diff.length ? diff.sort().join(',') : null;
+}
+
 export default function App() {
   const [state, setStateRaw] = useState(() => loadState());
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [zoom, setZoom] = useState(null);
   const [autoZoom, setAutoZoom] = useState(1);
   const [mobileOpen, setMobileOpen] = useState(false);
   const saveTimerRef = useRef(null);
+  const pruneTimerRef = useRef(null);
 
-  const setState = useCallback((next) => {
-    setStateRaw(next);
-    setSaving(true);
+  // stateRef mirrors the live state so history/commit logic can read the
+  // freshest value without stale closures — and without doing side effects
+  // inside a functional updater (which React StrictMode double-invokes).
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; });
+
+  const persist = useCallback((next, delay = 500) => {
     clearTimeout(saveTimerRef.current);
+    setSaving(true);
     saveTimerRef.current = setTimeout(() => {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
       setSaving(false);
-    }, 400);
+    }, delay);
   }, []);
 
-  const data = state.data[state.language];
-  const fontPreset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
+  // The one place state is actually written. Updates the mirror eagerly so the
+  // next change/undo reads this value even before React re-renders.
+  const commit = useCallback((next, saveDelay) => {
+    stateRef.current = next;
+    setStateRaw(next);
+    persist(next, saveDelay);
+  }, [persist]);
 
-  const pruneTimerRef = useRef(null);
+  /* ---- Undo / redo history ---------------------------------------------- */
+  const historyRef = useRef({ past: [], future: [], lastKey: null, lastAt: 0 });
+  const [, bumpHist] = useReducer((x) => x + 1, 0);
+
+  const pushPast = useCallback((prev, coalesceKey) => {
+    const h = historyRef.current;
+    const now = perfNow();
+    const coalesce = coalesceKey && h.lastKey === coalesceKey && (now - h.lastAt) < 700;
+    if (!coalesce) {
+      h.past.push(prev);
+      if (h.past.length > 120) h.past.shift();
+      h.future = [];
+      bumpHist();
+    }
+    h.lastKey = coalesceKey ?? null;
+    h.lastAt = now;
+  }, []);
+
+  const undo = useCallback(() => {
+    const h = historyRef.current;
+    if (!h.past.length) return;
+    // Flush any in-progress caret edit first so it becomes its own step.
+    const ae = document.activeElement;
+    if (ae && ae.isContentEditable) ae.blur();
+    if (!h.past.length) return;
+    const prev = h.past.pop();
+    h.future.push(stateRef.current);
+    h.lastKey = null;
+    commit(prev);
+    bumpHist();
+  }, [commit]);
+
+  const redo = useCallback(() => {
+    const h = historyRef.current;
+    if (!h.future.length) return;
+    const next = h.future.pop();
+    h.past.push(stateRef.current);
+    h.lastKey = null;
+    commit(next);
+    bumpHist();
+  }, [commit]);
+
+  const canUndo = historyRef.current.past.length > 0;
+  const canRedo = historyRef.current.future.length > 0;
+
+  /* ---- State mutations (all record history) ----------------------------- */
+  // Sidebar / design controls hand us a fully-formed next state.
+  const setState = useCallback((next) => {
+    const prev = stateRef.current;
+    pushPast(prev, 'set:' + (changedKeys(prev, next) || 'all'));
+    commit(next);
+  }, [pushPast, commit]);
+
+  // Inline field edits from the templates.
+  const onEdit = useCallback((path, value) => {
+    const prev = stateRef.current;
+    const lang = prev.language;
+    const next = { ...prev, data: { ...prev.data, [lang]: setIn(prev.data[lang], path, value) } };
+    // Inline edits commit on blur (or Done on mobile) — each is a complete,
+    // deliberate change, so every one is its own undo step (no coalescing).
+    pushPast(prev, null);
+    commit(next);
+    schedulePrune();
+  }, [pushPast, commit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Remove empty entries / blank bullet lines / abandoned links — but only
   // once the user has finished editing: no contenteditable focused, and the
-  // mobile edit bar closed. Deferring + these guards means we never delete an
-  // entry mid-edit and never steal the caret.
+  // mobile edit bar closed. Automatic cleanup is intentionally NOT an undo
+  // step (undoing to restore a blank row the user abandoned is just noise).
   const schedulePrune = useCallback(() => {
     clearTimeout(pruneTimerRef.current);
     pruneTimerRef.current = setTimeout(() => {
       if (document.activeElement?.isContentEditable) return;          // caret editing
       if (document.body.hasAttribute('data-mobile-editing')) return;  // edit bar open
-      setStateRaw(prev => {
-        const lang = prev.language;
-        const cleaned = pruneLangData(prev.data[lang]);
-        if (!cleaned) return prev;
-        const next = { ...prev, data: { ...prev.data, [lang]: cleaned } };
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
-        return next;
-      });
+      const prev = stateRef.current;
+      const lang = prev.language;
+      const cleaned = pruneLangData(prev.data[lang]);
+      if (!cleaned) return;
+      // Pruning is a settled action — persist immediately (like the old path)
+      // so a quick app close can't lose the cleanup.
+      commit({ ...prev, data: { ...prev.data, [lang]: cleaned } }, 0);
     }, 250);
-  }, []);
+  }, [commit]);
 
-  const onEdit = useCallback((path, value) => {
-    setStateRaw(prev => {
-      const next = { ...prev };
-      next.data = { ...prev.data };
-      next.data[prev.language] = setIn(prev.data[prev.language], path, value);
-      clearTimeout(saveTimerRef.current);
-      setSaving(true);
-      saveTimerRef.current = setTimeout(() => {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
-        setSaving(false);
-      }, 600);
-      return next;
-    });
-    schedulePrune();
-  }, [schedulePrune]);
+  const data = state.data[state.language];
+  const fontPreset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
 
   const isMobile = useIsMobile();
 
@@ -110,8 +182,6 @@ export default function App() {
         || document.querySelector('.preview-page');
       if (!section) return;
       const editables = [...section.querySelectorAll('[data-editable]')];
-      // A fresh entry is a trailing run of empty fields — target the first
-      // empty field after the last filled one.
       let lastFilled = -1;
       editables.forEach((el, i) => { if (el.getAttribute('data-empty') !== 'true') lastFilled = i; });
       const target = editables.slice(lastFilled + 1).find(el => el.getAttribute('data-empty') === 'true')
@@ -148,36 +218,43 @@ export default function App() {
 
   const effectiveZoom = zoom != null ? zoom : autoZoom;
 
-  // Use zoom CSS property when scaling down (renders text at target resolution — crisp).
-  // Fall back to transform when scaling up so the page can visually extend beyond bounds.
   const stageStyle = effectiveZoom <= 1
     ? { zoom: effectiveZoom }
     : { transform: `scale(${effectiveZoom})`, transformOrigin: 'center center' };
 
-  const handleExport = () => setTimeout(() => window.print(), 50);
+  const handleExport = useCallback(async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      // Lazy-loaded so jsPDF + html-to-image stay out of the initial bundle.
+      const { exportPdf } = await import('./pdfExport.js');
+      const base = (data?.name || (state.language === 'he' ? 'קורות-חיים' : 'cv')).trim().replace(/\s+/g, '-');
+      await exportPdf(`${base || 'cv'}.pdf`);
+    } catch (e) {
+      // If canvas capture fails for any reason, fall back to the print dialog.
+      window.print();
+    } finally {
+      setExporting(false);
+    }
+  }, [exporting, data, state.language]);
 
   useEffect(() => {
     const onKey = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && (e.key === 'z' || e.key === 'Z')) {
         e.preventDefault();
-        handleExport();
+        if (e.shiftKey) redo(); else undo();
+        return;
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === '=') {
-        e.preventDefault();
-        setZoom(z => Math.min(2, (z || autoZoom) + 0.1));
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === '-') {
-        e.preventDefault();
-        setZoom(z => Math.max(0.2, (z || autoZoom) - 0.1));
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === '0') {
-        e.preventDefault();
-        setZoom(null);
-      }
+      if (mod && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); redo(); return; }
+      if (mod && e.key === 'p') { e.preventDefault(); handleExport(); }
+      if (mod && e.key === '=') { e.preventDefault(); setZoom(z => Math.min(2, (z || autoZoom) + 0.1)); }
+      if (mod && e.key === '-') { e.preventDefault(); setZoom(z => Math.max(0.2, (z || autoZoom) - 0.1)); }
+      if (mod && e.key === '0') { e.preventDefault(); setZoom(null); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [autoZoom]);
+  }, [autoZoom, undo, redo, handleExport]);
 
   return (
     <div
@@ -196,17 +273,12 @@ export default function App() {
         >
           <div
             className="preview-page"
-            // When focus leaves an inline field, clean up any entry the user
-            // added but never filled. schedulePrune defers + checks that no
-            // editable is focused, so this never fires mid-edit.
             onBlur={schedulePrune}
             style={{
               '--cv-heading': fontPreset.heading,
               '--cv-body': fontPreset.body,
             }}
           >
-            {/* AutoFit measures natural height and scales so the CV ALWAYS
-                fits exactly one A4 page — never clipped, never two pages. */}
             <AutoFit
               fontScale={state.fontScale ?? 1}
               deps={[state.template, state.language, state.sections, state.accent, state.fontPreset]}
@@ -224,6 +296,15 @@ export default function App() {
         </div>
 
         <MobileEditBar lang={state.language}/>
+
+        <div className="history-badge">
+          <button onClick={undo} disabled={!canUndo} title={state.language === 'he' ? 'בטל (Ctrl+Z)' : 'Undo (Ctrl+Z)'}>
+            <Icon name="undo" size={15}/>
+          </button>
+          <button onClick={redo} disabled={!canRedo} title={state.language === 'he' ? 'בצע שוב (Ctrl+Shift+Z)' : 'Redo (Ctrl+Shift+Z)'}>
+            <Icon name="redo" size={15}/>
+          </button>
+        </div>
 
         <div className="zoom-badge">
           <button onClick={() => setZoom(z => Math.max(0.2, (z || autoZoom) - 0.1))} title="Zoom out">
@@ -251,7 +332,12 @@ export default function App() {
         isMobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
         onExport={handleExport}
+        exporting={exporting}
         onAddJump={jumpToSection}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
         saving={saving}
       />
     </div>
