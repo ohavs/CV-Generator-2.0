@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 // Breeze: Clean modern split header, minimal section labels with accent underline
-const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sections, onEdit }) {
+const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -25,7 +26,11 @@ const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sectio
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom: 14 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+        {showPhoto && (
+          <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={66} accent={accent}/>
+        )}
+        <div style={{ flex:1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
           <div>
             <Editable as="h1" {...F(['personal', 'name'])}
               style={{ fontFamily: 'var(--cv-heading)', fontSize: 36, fontWeight: 600, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05, color: '#111' }}/>
@@ -40,6 +45,7 @@ const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sectio
               <Editable key={i} value={l.url} onChange={(v) => onEdit(['personal', 'links', i, 'url'], v)} style={{ color: accent }}/>
             ))}
           </div>
+        </div>
         </div>
         <div style={{ height: 1, background: '#D0CCC4', marginTop: 12 }}/>
       </header>

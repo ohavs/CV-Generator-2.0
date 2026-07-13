@@ -1,10 +1,11 @@
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import Icon from '../components/Icon.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
-export default function EditorialTemplate({ data, accent, lang, sections, onEdit }) {
+export default function EditorialTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -25,6 +26,11 @@ export default function EditorialTemplate({ data, accent, lang, sections, onEdit
 
   const renderPersonal = () => (
     <header key="personal" style={{ marginBottom: 22, paddingBottom: 18, borderBottom: '0.5px solid #1A1A1A' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+        {showPhoto && (
+          <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={72} accent={accent}/>
+        )}
+        <div style={{ flex:1 }}>
       <div style={{ fontFamily: 'var(--cv-body)', fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: '#888', marginBottom: 14 }}>
         {isRtl ? '— קורות חיים —' : '— curriculum vitae —'}
       </div>
@@ -38,6 +44,8 @@ export default function EditorialTemplate({ data, accent, lang, sections, onEdit
           <Editable {...F(['personal', 'email'])}/><span>·</span>
           <Editable {...F(['personal', 'phone'])}/><span>·</span>
           <Editable {...F(['personal', 'location'])}/>
+        </div>
+      </div>
         </div>
       </div>
     </header>

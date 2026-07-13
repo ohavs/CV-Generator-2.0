@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import Icon from '../components/Icon.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
-const ClassicTemplate = memo(function ClassicTemplate({ data, accent, lang, sections, onEdit }) {
+const ClassicTemplate = memo(function ClassicTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -27,6 +28,11 @@ const ClassicTemplate = memo(function ClassicTemplate({ data, accent, lang, sect
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ textAlign: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '2px solid #1A1A1A' }}>
+        {showPhoto && (
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:10 }}>
+            <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={74} accent={accent}/>
+          </div>
+        )}
         <Editable as="h1" {...F(['personal','name'])}
           style={{ fontFamily:'var(--cv-heading)', fontSize:36, fontWeight:500, margin:'0 0 4px', letterSpacing:'-0.01em', lineHeight:1.05 }}/>
         <Editable as="div" {...F(['personal','title'])}

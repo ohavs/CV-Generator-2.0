@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 // Nordic: Scandinavian minimalism — spacious, elegant, two-column grid
-const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sections, onEdit }) {
+const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -31,23 +32,30 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom: 30, paddingBottom: 22, borderBottom: '1px solid #E8E3DC' }}>
-        <Editable as="h1" {...F(['personal','name'])}
-          style={{ fontFamily: 'var(--cv-heading)', fontSize: 42, fontWeight: 300, margin: 0, letterSpacing: '-0.03em', lineHeight: 1, color: '#111' }}/>
-        <Editable as="div" {...F(['personal','title'])}
-          style={{ fontSize: 13, color: '#777', marginTop: 8, fontWeight: 400, letterSpacing: '0.02em' }}/>
-        <div style={{ display: 'flex', gap: 20, fontSize: 10.5, color: '#555', marginTop: 14, flexWrap: 'wrap' }}>
-          <Editable {...F(['personal','email'])}/>
-          <span style={{ color: '#ccc' }}>·</span>
-          <Editable {...F(['personal','phone'])}/>
-          <span style={{ color: '#ccc' }}>·</span>
-          <Editable {...F(['personal','location'])}/>
-          {(data.personal?.links || []).map((l, i) => (
-            <span key={i}>
+        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+          {showPhoto && (
+            <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={70} accent={accent}/>
+          )}
+          <div>
+            <Editable as="h1" {...F(['personal','name'])}
+              style={{ fontFamily: 'var(--cv-heading)', fontSize: 42, fontWeight: 300, margin: 0, letterSpacing: '-0.03em', lineHeight: 1, color: '#111' }}/>
+            <Editable as="div" {...F(['personal','title'])}
+              style={{ fontSize: 13, color: '#777', marginTop: 8, fontWeight: 400, letterSpacing: '0.02em' }}/>
+            <div style={{ display: 'flex', gap: 20, fontSize: 10.5, color: '#555', marginTop: 14, flexWrap: 'wrap' }}>
+              <Editable {...F(['personal','email'])}/>
               <span style={{ color: '#ccc' }}>·</span>
-              {' '}
-              <Editable value={l.url} onChange={(v) => onEdit(['personal','links',i,'url'],v)} style={{ color: accent }}/>
-            </span>
-          ))}
+              <Editable {...F(['personal','phone'])}/>
+              <span style={{ color: '#ccc' }}>·</span>
+              <Editable {...F(['personal','location'])}/>
+              {(data.personal?.links || []).map((l, i) => (
+                <span key={i}>
+                  <span style={{ color: '#ccc' }}>·</span>
+                  {' '}
+                  <Editable value={l.url} onChange={(v) => onEdit(['personal','links',i,'url'],v)} style={{ color: accent }}/>
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </header>
     ),

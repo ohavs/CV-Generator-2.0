@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 // Charter: Classic elegance. Centered serif header, accent section titles with inline underline.
-const CharterTemplate = memo(function CharterTemplate({ data, accent, lang, sections, onEdit }) {
+const CharterTemplate = memo(function CharterTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -28,6 +29,11 @@ const CharterTemplate = memo(function CharterTemplate({ data, accent, lang, sect
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ textAlign: 'center', marginBottom: 16, paddingBottom: 14, borderBottom: `1px solid #D0CCC4` }}>
+        {showPhoto && (
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:10 }}>
+            <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={74} accent={accent}/>
+          </div>
+        )}
         <Editable as="h1" {...F(['personal', 'name'])}
           style={{ fontFamily: 'var(--cv-heading)', fontSize: 40, fontWeight: 400, margin: 0, letterSpacing: '-0.01em', lineHeight: 1.05, color: '#111' }}/>
         <Editable as="div" {...F(['personal', 'title'])}

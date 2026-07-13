@@ -179,6 +179,37 @@ input, textarea, select { font-family: inherit; color: inherit; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* profile photo well (shared by all templates) */
+.photo-slot {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  overflow: visible;
+  transition: filter 0.12s;
+}
+.photo-slot[data-empty="false"]:hover { filter: brightness(0.94); }
+.photo-remove {
+  position: absolute;
+  top: -6px; inset-inline-end: -6px;
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #d64545; color: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.photo-slot:hover .photo-remove { opacity: 1; }
+/* In the exported PDF: no empty upload wells, no remove button — just the photo. */
+body[data-exporting] .photo-slot[data-empty="true"] { display: none !important; }
+body[data-exporting] .photo-remove { display: none !important; }
+@media print {
+  .photo-slot[data-empty="true"] { display: none !important; }
+  .photo-remove { display: none !important; }
+}
+
 /* mobile cta */
 .mobile-cta {
   display: none;

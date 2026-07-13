@@ -559,6 +559,7 @@ export const DEFAULT_STATE = {
   fontPreset: 'newsreader',
   fontScale: 1.0,
   darkEdit: false,
+  showPhoto: true,
   sections: DEFAULT_SECTIONS,
   data: DEMO_DATA,
 };

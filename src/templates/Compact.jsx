@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 // Compact: Maximum density for experienced professionals with lots of content
-const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sections, onEdit }) {
+const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -27,7 +28,11 @@ const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sect
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom: 10 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+        {showPhoto && (
+          <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={56} accent={accent}/>
+        )}
+        <div style={{ flex:1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
           <div>
             <Editable as="h1" {...F(['personal', 'name'])}
               style={{ fontFamily: 'var(--cv-heading)', fontSize: 30, fontWeight: 700, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.05, color: '#111' }}/>
@@ -48,6 +53,7 @@ const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sect
               </div>
             )}
           </div>
+        </div>
         </div>
         <div style={{ height: '1px', background: '#111', marginTop: 7 }}/>
       </header>

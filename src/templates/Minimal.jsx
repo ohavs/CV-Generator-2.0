@@ -2,9 +2,10 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
-const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sections, onEdit }) {
+const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -26,21 +27,28 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom:28 }}>
-        <Editable as="h1" {...F(['personal','name'])}
-          style={{ fontFamily:'var(--cv-heading)', fontSize:40, fontWeight:400, margin:0, letterSpacing:'-0.025em', lineHeight:1, color:'#1A1A1A' }}/>
-        <Editable as="div" {...F(['personal','title'])}
-          style={{ fontSize:13, color:'#888', marginTop:6, fontWeight:400 }}/>
-        <div style={{ display:'flex', gap:12, fontSize:10, color:'#666', marginTop:12, flexWrap:'wrap' }}>
-          <Editable {...F(['personal','email'])}/>
-          <span style={{color:'#ccc'}}>·</span>
-          <Editable {...F(['personal','phone'])}/>
-          <span style={{color:'#ccc'}}>·</span>
-          <Editable {...F(['personal','location'])}/>
-          {(data.personal?.links||[]).slice(0,2).map((l,i) => (
-            <span key={i}><span style={{color:'#ccc'}}>·</span>{' '}
-              <Editable value={l.url} onChange={(v)=>onEdit(['personal','links',i,'url'],v)} style={{color:accent}}/>
-            </span>
-          ))}
+        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+          {showPhoto && (
+            <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={66} accent={accent}/>
+          )}
+          <div>
+            <Editable as="h1" {...F(['personal','name'])}
+              style={{ fontFamily:'var(--cv-heading)', fontSize:40, fontWeight:400, margin:0, letterSpacing:'-0.025em', lineHeight:1, color:'#1A1A1A' }}/>
+            <Editable as="div" {...F(['personal','title'])}
+              style={{ fontSize:13, color:'#888', marginTop:6, fontWeight:400 }}/>
+            <div style={{ display:'flex', gap:12, fontSize:10, color:'#666', marginTop:12, flexWrap:'wrap' }}>
+              <Editable {...F(['personal','email'])}/>
+              <span style={{color:'#ccc'}}>·</span>
+              <Editable {...F(['personal','phone'])}/>
+              <span style={{color:'#ccc'}}>·</span>
+              <Editable {...F(['personal','location'])}/>
+              {(data.personal?.links||[]).slice(0,2).map((l,i) => (
+                <span key={i}><span style={{color:'#ccc'}}>·</span>{' '}
+                  <Editable value={l.url} onChange={(v)=>onEdit(['personal','links',i,'url'],v)} style={{color:accent}}/>
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </header>
     ),

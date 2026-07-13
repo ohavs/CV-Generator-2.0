@@ -1,8 +1,9 @@
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 
-export default function AcademicTemplate({ data, accent, lang, sections, onEdit }) {
+export default function AcademicTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -30,6 +31,11 @@ export default function AcademicTemplate({ data, accent, lang, sections, onEdit 
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom: 22, textAlign: 'center' }}>
+        {showPhoto && (
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:10 }}>
+            <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={68} accent={accent}/>
+          </div>
+        )}
         <Editable as="h1" {...F(['personal', 'name'])}
           style={{ fontFamily: 'var(--cv-heading)', fontSize: 28, fontWeight: 500, margin: 0, color: '#1A1A1A', letterSpacing: '0.005em' }}/>
         <Editable as="div" {...F(['personal', 'title'])}

@@ -1,13 +1,13 @@
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
-import EditablePhoto from '../components/EditablePhoto.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import Icon from '../components/Icon.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 const SIDEBAR_SECTIONS = new Set(['skills', 'languages', 'certifications', 'hobbies', 'links']);
 
-export default function SidebarTemplate({ data, accent, lang, sections, onEdit }) {
+export default function SidebarTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -272,9 +272,11 @@ export default function SidebarTemplate({ data, accent, lang, sections, onEdit }
       <aside style={{ width: '36%', background: sidebarBg, color: 'white', padding: '16mm 14mm' }}>
         {showPersonal && (
           <div style={{ marginBottom: 24, textAlign: isRtl ? 'right' : 'left' }}>
-            <div style={{ marginBottom: 14, display: 'flex', justifyContent: isRtl ? 'flex-end' : 'flex-start' }}>
-              <EditablePhoto value={data.personal?.photo} onChange={(v) => onEdit(['personal', 'photo'], v)} size={92} accent="white"/>
-            </div>
+            {showPhoto && (
+              <div style={{ marginBottom: 14, display: 'flex', justifyContent: isRtl ? 'flex-end' : 'flex-start' }}>
+                <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal', 'photo'], v)} size={92} accent="white"/>
+              </div>
+            )}
             <Editable as="h1" {...F(['personal', 'name'])}
               style={{ fontFamily: 'var(--cv-heading)', fontSize: 26, fontWeight: 500, color: 'white', margin: 0, lineHeight: 1.1, letterSpacing: '-0.01em' }}/>
             <Editable as="div" {...F(['personal', 'title'])}

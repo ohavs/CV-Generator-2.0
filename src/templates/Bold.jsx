@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 // Bold: High-impact display — strong accent band header, oversized name, confident typography
-const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, onEdit }) {
+const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -26,6 +27,11 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom:20, background:accent, margin:'-14mm -16mm 20px', padding:'18px 16mm 16px', color:'#fff' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+        {showPhoto && (
+          <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={72} accent="white"/>
+        )}
+        <div style={{ flex:1 }}>
         <Editable as="h1" {...F(['personal','name'])}
           style={{ fontFamily:'var(--cv-heading)', fontSize:42, fontWeight:800, margin:0, letterSpacing:'-0.03em', lineHeight:1.05, color:'#fff' }}/>
         <Editable as="div" {...F(['personal','title'])}
@@ -37,6 +43,8 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
           {(data.personal?.links||[]).slice(0,2).map((l,i) => (
             <Editable key={i} value={l.url} onChange={(v)=>onEdit(['personal','links',i,'url'],v)} style={{color:'rgba(255,255,255,0.85)'}}/>
           ))}
+        </div>
+        </div>
         </div>
       </header>
     ),

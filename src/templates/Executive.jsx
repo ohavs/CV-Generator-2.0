@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 // Executive: Classic formal, centered header, thick rules, serif body
-const ExecutiveTemplate = memo(function ExecutiveTemplate({ data, accent, lang, sections, onEdit }) {
+const ExecutiveTemplate = memo(function ExecutiveTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -28,6 +29,11 @@ const ExecutiveTemplate = memo(function ExecutiveTemplate({ data, accent, lang, 
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ textAlign:'center', marginBottom:20, paddingBottom:14 }}>
+        {showPhoto && (
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:10 }}>
+            <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={70} accent={accent}/>
+          </div>
+        )}
         <div style={{ borderTop:'3px solid #1A1A1A', borderBottom:'1px solid #1A1A1A', padding:'8px 0 6px', marginBottom:6 }}>
           <Editable as="h1" {...F(['personal','name'])}
             style={{ fontFamily:'var(--cv-heading)', fontSize:34, fontWeight:600, margin:0, letterSpacing:'0.04em', color:'#111' }}/>

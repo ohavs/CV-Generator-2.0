@@ -359,6 +359,7 @@ export default function App() {
                 accent={state.accent}
                 lang={state.language}
                 sections={state.sections}
+                showPhoto={state.showPhoto !== false}
                 onEdit={onEdit}
               />
             </AutoFit>

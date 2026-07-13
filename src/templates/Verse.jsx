@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 // Verse: Wide left margin holds section titles; content in the right 68%. Book-like margin note style.
-const VerseTemplate = memo(function VerseTemplate({ data, accent, lang, sections, onEdit }) {
+const VerseTemplate = memo(function VerseTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -32,6 +33,11 @@ const VerseTemplate = memo(function VerseTemplate({ data, accent, lang, sections
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom: 20 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+          {showPhoto && (
+            <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={68} accent={accent}/>
+          )}
+          <div style={{ flex:1 }}>
         <Editable as="h1" {...F(['personal', 'name'])}
           style={{ fontFamily: 'var(--cv-heading)', fontSize: 38, fontWeight: 400, margin: 0, letterSpacing: '-0.025em', lineHeight: 1.05, color: '#111' }}/>
         <Editable as="div" {...F(['personal', 'title'])}
@@ -48,6 +54,8 @@ const VerseTemplate = memo(function VerseTemplate({ data, accent, lang, sections
               <Editable value={l.url} onChange={(v) => onEdit(['personal', 'links', i, 'url'], v)} style={{ color: accent }}/>
             </span>
           ))}
+        </div>
+          </div>
         </div>
         <div style={{ height: '0.5px', background: '#D0CCC4', marginTop: 14 }}/>
       </header>

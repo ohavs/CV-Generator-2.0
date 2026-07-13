@@ -1,11 +1,12 @@
 import { I18N, formatRange } from '../data.js';
 import { makeField, visibleIds } from './helpers.js';
 import Editable from '../components/Editable.jsx';
+import PhotoSlot from '../components/PhotoSlot.jsx';
 
 const monoFont = "var(--cv-mono, 'JetBrains Mono', 'Miriam Mono CLM', monospace)";
 const codeBg = '#FAF8F4';
 
-export default function TechnicalTemplate({ data, accent, lang, sections, onEdit }) {
+export default function TechnicalTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
   const t = I18N[lang];
   const isRtl = lang === 'he';
@@ -32,6 +33,11 @@ export default function TechnicalTemplate({ data, accent, lang, sections, onEdit
   const renderMap = {
     personal: () => (
       <header key="personal" style={{ marginBottom: 22, paddingBottom: 14, borderBottom: `2px solid ${accent}` }}>
+        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+        {showPhoto && (
+          <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={66} round={false} accent={accent}/>
+        )}
+        <div style={{ flex:1 }}>
         <div style={{ fontSize: 10, color: dimColor, marginBottom: 6, fontFamily: monoFont }}>
           {isRtl ? '// קובץ קורות חיים · v2.0' : '// cv.profile · v2.0'}
         </div>
@@ -53,6 +59,8 @@ export default function TechnicalTemplate({ data, accent, lang, sections, onEdit
               <Editable value={l.url} onChange={(v) => onEdit(['personal', 'links', i, 'url'], v)} style={{ color: accent }}/>
             </div>
           ))}
+        </div>
+        </div>
         </div>
       </header>
     ),

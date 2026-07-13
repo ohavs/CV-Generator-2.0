@@ -138,6 +138,25 @@ function DesignTab({ state, setState, t }) {
               </button>
             </span>
           </div>
+          <div className="field-row">
+            <label>{lang === 'he' ? 'תמונת פרופיל' : 'Profile photo'}</label>
+            <span className="seg" style={{ padding: 3 }}>
+              <button
+                data-active={state.showPhoto !== false}
+                onClick={() => setState({ ...state, showPhoto: true })}
+                style={{ padding: '6px 12px', borderRadius: 7, background: state.showPhoto !== false ? 'var(--surface)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: 5, boxShadow: state.showPhoto !== false ? 'var(--shadow-sm)' : 'none' }}
+              >
+                <Icon name="eye" size={14}/>
+              </button>
+              <button
+                data-active={state.showPhoto === false}
+                onClick={() => setState({ ...state, showPhoto: false })}
+                style={{ padding: '6px 12px', borderRadius: 7, background: state.showPhoto === false ? 'var(--surface)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: 5, boxShadow: state.showPhoto === false ? 'var(--shadow-sm)' : 'none' }}
+              >
+                <Icon name="eye-off" size={14}/>
+              </button>
+            </span>
+          </div>
         </div>
       </div>
 
