@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { entryEmpty, linkEmpty } from '../entryUtils.js';
+import PhraseBank from './PhraseBank.jsx';
 
 export default function ContentTab({ state, setState, t, onAddJump }) {
   const lang = state.language;
@@ -98,6 +99,8 @@ export default function ContentTab({ state, setState, t, onAddJump }) {
             : 'Tapping + adds an item and jumps to it in the preview.'}
         </div>
       </div>
+
+      <PhraseBank state={state} setState={setState} onAddJump={onAddJump}/>
 
       <div className="panel-group">
         <h3 className="panel-title">{lang === 'he' ? 'מחיקת פריטים' : 'Remove items'}</h3>
