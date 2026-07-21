@@ -961,11 +961,185 @@ input[type="range"]::-webkit-slider-thumb {
 .row { display: flex; align-items: center; gap: 8px; }
 .spacer { flex: 1; }
 
+/* ===== full-screen text editor ===== */
+.fulledit-toggle {
+  position: fixed;
+  bottom: 20px;
+  inset-inline-end: 16px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg-elevated);
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.12s, opacity 0.12s;
+}
+.fulledit-toggle:hover { transform: translateY(-1px); }
+.fulledit-toggle[data-mode="edit"] { background: var(--accent); color: #fff; }
+body[data-mobile-editing] .fulledit-toggle { display: none; }
+
+.full-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.2s;
+}
+.full-editor[data-open="true"] { transform: none; opacity: 1; pointer-events: auto; }
+
+.fe-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+.fe-title { font-size: 16px; font-weight: 700; color: var(--ink); font-family: var(--cv-heading, inherit); }
+.fe-preview-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 999px;
+  background: var(--accent); color: #fff;
+  font-size: 13.5px; font-weight: 600;
+}
+.fe-preview-btn.wide { width: 100%; justify-content: center; padding: 13px; }
+.fe-preview-btn:hover { filter: brightness(1.05); }
+
+.fe-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  padding-bottom: 120px;
+}
+.fe-section {
+  max-width: 680px;
+  margin: 0 auto 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.fe-section[data-hidden="true"] { opacity: 0.62; }
+.fe-section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.fe-section-head h2 {
+  margin: 0; font-size: 14.5px; font-weight: 700; color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.fe-eye {
+  width: 32px; height: 32px; display: grid; place-items: center;
+  border-radius: 8px; color: var(--ink-3);
+}
+.fe-eye:hover { background: var(--surface-2); color: var(--ink); }
+
+.fe-grid { display: flex; flex-direction: column; gap: 12px; }
+.fe-field { display: flex; flex-direction: column; gap: 5px; }
+.fe-label {
+  font-size: 12px; font-weight: 600; color: var(--ink-3);
+  display: flex; align-items: baseline; gap: 8px;
+}
+.fe-label em { font-style: normal; font-weight: 400; color: var(--ink-4); font-size: 11px; }
+.fe-input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--ink);
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.fe-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+textarea.fe-input { min-height: 46px; overflow: hidden; }
+
+.fe-entry {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px;
+  margin-bottom: 10px;
+  background: var(--bg-elevated);
+}
+.fe-entry-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.fe-entry-n {
+  width: 24px; height: 24px; display: grid; place-items: center;
+  border-radius: 999px; background: var(--surface-2); color: var(--ink-2);
+  font-size: 12px; font-weight: 700;
+}
+.fe-entry-x {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--ink-3); padding: 5px 8px; border-radius: 7px;
+}
+.fe-entry-x:hover { background: var(--surface-2); color: #d64545; }
+
+.fe-lines { display: flex; flex-direction: column; gap: 6px; }
+.fe-line { display: flex; align-items: center; gap: 6px; }
+.fe-line .fe-input { flex: 1; }
+.fe-line-x {
+  flex-shrink: 0; width: 30px; height: 30px; display: grid; place-items: center;
+  border-radius: 7px; color: var(--ink-4);
+}
+.fe-line-x:hover { background: var(--surface-2); color: #d64545; }
+.fe-addline {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 4px; padding: 6px 10px; border-radius: 8px;
+  font-size: 12.5px; font-weight: 500; color: var(--accent);
+}
+.fe-addline:hover { background: var(--surface-2); }
+.fe-addentry {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px; border-radius: 10px;
+  border: 1px dashed var(--border); color: var(--accent);
+  font-size: 13.5px; font-weight: 600;
+}
+.fe-addentry:hover { background: var(--surface-2); border-style: solid; }
+
+.fe-linkrow { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.fe-linkrow .fe-input { flex: 1; min-width: 0; }
+
+.fe-dots { display: flex; gap: 8px; padding: 4px 0; }
+.fe-dot {
+  width: 26px; height: 26px; border-radius: 999px;
+  border: 1.5px solid var(--accent);
+  background: transparent; transition: background 0.1s;
+}
+.fe-dot[data-on="true"] { background: var(--accent); }
+
+.fe-foot { max-width: 680px; margin: 8px auto 0; }
+
+@media (max-width: 560px) {
+  .fe-title { font-size: 15px; }
+  .fe-section { padding: 14px; border-radius: 12px; }
+}
+
 /* print */
 @media print {
   body { background: white !important; overflow: visible !important; }
   .app { display: block !important; height: auto !important; }
-  .sidebar, .zoom-badge, .history-badge, .mobile-cta, .mobile-edit-bar, .sheet-backdrop { display: none !important; }
+  .sidebar, .zoom-badge, .history-badge, .mobile-cta, .mobile-edit-bar, .sheet-backdrop, .full-editor, .fulledit-toggle { display: none !important; }
   .bullet-add { display: none !important; }
   [data-editable][data-editing="true"] { background: transparent !important; box-shadow: none !important; }
   .preview-area { padding: 0 !important; overflow: visible !important; background: white !important; background-image: none !important; }

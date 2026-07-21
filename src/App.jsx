@@ -6,6 +6,7 @@ import { TemplateRoot } from './templates/index.jsx';
 import Sidebar from './sidebar/Sidebar.jsx';
 import AutoFit from './components/AutoFit.jsx';
 import MobileEditBar from './components/MobileEditBar.jsx';
+import FullEditor from './components/FullEditor.jsx';
 import { useIsMobile } from './components/Editable.jsx';
 import Icon from './components/Icon.jsx';
 
@@ -45,6 +46,7 @@ export default function App() {
   const [zoom, setZoom] = useState(null);
   const [autoZoom, setAutoZoom] = useState(1);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [fullEdit, setFullEdit] = useState(false);
   const saveTimerRef = useRef(null);
   const pruneTimerRef = useRef(null);
 
@@ -154,6 +156,26 @@ export default function App() {
     }, 250);
   }, [commit]);
 
+  // Edits from the full-screen form editor. Like onEdit but keyed per-field
+  // (so distinct fields stay distinct undo steps) and WITHOUT auto-prune — the
+  // form has explicit remove buttons, so we never yank an entry card out from
+  // under the user mid-edit. Leftover empties are cleaned when they return to
+  // the preview (closeFull calls schedulePrune).
+  const editField = useCallback((path, value) => {
+    const prev = stateRef.current;
+    const lang = prev.language;
+    const next = { ...prev, data: { ...prev.data, [lang]: setIn(prev.data[lang], path, value) } };
+    pushPast(prev, 'fe:' + lang + ':' + path.join('.'));
+    commit(next);
+  }, [pushPast, commit]);
+
+  const toggleSection = useCallback((id) => {
+    const prev = stateRef.current;
+    const sections = prev.sections.map(s => s.id === id ? { ...s, visible: !s.visible } : s);
+    pushPast(prev, 'sec:' + id);
+    commit({ ...prev, sections });
+  }, [pushPast, commit]);
+
   /* ---- Document management ---------------------------------------------- */
   // Save the live working state into its document before we swap documents.
   const flushActive = useCallback(() => {
@@ -236,6 +258,9 @@ export default function App() {
   const fontPreset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
 
   const isMobile = useIsMobile();
+
+  const openFull = useCallback(() => { setMobileOpen(false); setFullEdit(true); }, []);
+  const closeFull = useCallback(() => { setFullEdit(false); schedulePrune(); }, [schedulePrune]);
 
   // When the mobile edit bar closes (commit or cancel), clean up leftovers.
   useEffect(() => {
@@ -418,6 +443,27 @@ export default function App() {
         onDuplicateDoc={duplicateDoc}
         onDeleteDoc={deleteDoc}
       />
+
+      <FullEditor
+        open={fullEdit}
+        state={state}
+        editField={editField}
+        toggleSection={toggleSection}
+        onClose={closeFull}
+      />
+
+      {/* One quick toggle, same spot in both modes: flips preview ⇄ full text
+          editor. Sits above the editor overlay so it never scrolls away. */}
+      <button
+        className="fulledit-toggle"
+        data-mode={fullEdit ? 'edit' : 'preview'}
+        onClick={() => (fullEdit ? closeFull() : openFull())}
+      >
+        <Icon name={fullEdit ? 'eye' : 'edit'} size={16}/>
+        <span>{fullEdit
+          ? (state.language === 'he' ? 'תצוגה' : 'Preview')
+          : (state.language === 'he' ? 'עריכת טקסט' : 'Text editor')}</span>
+      </button>
     </div>
   );
 }
