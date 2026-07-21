@@ -211,23 +211,35 @@ body[data-exporting] .photo-remove { display: none !important; }
 }
 
 /* mobile cta */
-.mobile-cta {
-  display: none;
-  position: absolute;
-  bottom: 20px;
+/* bottom action bar (enter full editor / open design sheet) */
+.action-bar {
+  position: fixed;
+  bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  background: var(--ink);
-  color: var(--bg);
-  padding: 14px 24px 14px 20px;
-  border-radius: 999px;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow: var(--shadow-lg);
+  display: flex;
   align-items: center;
   gap: 8px;
 }
+.action-bar[data-hidden] { display: none; }
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.12s;
+}
+.action-btn:hover { transform: translateY(-1px); }
+.action-edit { background: var(--accent); color: #fff; }
+.action-design { background: var(--ink); color: var(--bg-elevated); }
+/* Design sheet is only reachable this way on mobile; on desktop the sidebar
+   is docked, so hide that button there. */
+.action-design { display: none; }
 
 /* ========== SIDEBAR ========== */
 .sidebar {
@@ -754,8 +766,11 @@ body[data-exporting] .photo-remove { display: none !important; }
     border-radius: 4px;
     background: var(--border-strong);
   }
-  .preview-area { padding: 12px 12px 80px; background-image: none; }
-  .mobile-cta { display: inline-flex; }
+  .preview-area { padding: 12px 12px 90px; background-image: none; }
+  .action-design { display: inline-flex; }
+  /* Free the bottom for the action bar — move zoom to the top-end corner,
+     opposite the undo/redo badge. */
+  .zoom-badge { top: 16px; bottom: auto; inset-inline-start: auto; inset-inline-end: 16px; }
   .template-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
@@ -842,7 +857,7 @@ body[data-exporting] .photo-remove { display: none !important; }
 .meb-done { color: var(--bg); background: var(--accent); }
 
 /* while the edit bar is open, hide floating chrome */
-body[data-mobile-editing] .mobile-cta,
+body[data-mobile-editing] .action-bar,
 body[data-mobile-editing] .zoom-badge,
 body[data-mobile-editing] .history-badge { display: none !important; }
 
@@ -962,27 +977,6 @@ input[type="range"]::-webkit-slider-thumb {
 .spacer { flex: 1; }
 
 /* ===== full-screen text editor ===== */
-.fulledit-toggle {
-  position: fixed;
-  bottom: 20px;
-  inset-inline-end: 16px;
-  z-index: 60;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--bg-elevated);
-  font-size: 13.5px;
-  font-weight: 600;
-  box-shadow: var(--shadow-md);
-  transition: transform 0.12s, opacity 0.12s;
-}
-.fulledit-toggle:hover { transform: translateY(-1px); }
-.fulledit-toggle[data-mode="edit"] { background: var(--accent); color: #fff; }
-body[data-mobile-editing] .fulledit-toggle { display: none; }
-
 .full-editor {
   position: fixed;
   inset: 0;
@@ -1139,7 +1133,7 @@ textarea.fe-input { min-height: 46px; overflow: hidden; }
 @media print {
   body { background: white !important; overflow: visible !important; }
   .app { display: block !important; height: auto !important; }
-  .sidebar, .zoom-badge, .history-badge, .mobile-cta, .mobile-edit-bar, .sheet-backdrop, .full-editor, .fulledit-toggle { display: none !important; }
+  .sidebar, .zoom-badge, .history-badge, .action-bar, .mobile-edit-bar, .sheet-backdrop, .full-editor { display: none !important; }
   .bullet-add { display: none !important; }
   [data-editable][data-editing="true"] { background: transparent !important; box-shadow: none !important; }
   .preview-area { padding: 0 !important; overflow: visible !important; background: white !important; background-image: none !important; }

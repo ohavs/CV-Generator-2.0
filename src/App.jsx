@@ -414,10 +414,6 @@ export default function App() {
           </button>
         </div>
 
-        <button className="mobile-cta" onClick={() => setMobileOpen(true)}>
-          <Icon name="sliders" size={14}/>
-          {state.language === 'he' ? 'עריכה ועיצוב' : 'Edit & design'}
-        </button>
       </div>
 
       <div className="sheet-backdrop" data-open={mobileOpen} onClick={() => setMobileOpen(false)}/>
@@ -452,18 +448,18 @@ export default function App() {
         onClose={closeFull}
       />
 
-      {/* One quick toggle, same spot in both modes: flips preview ⇄ full text
-          editor. Sits above the editor overlay so it never scrolls away. */}
-      <button
-        className="fulledit-toggle"
-        data-mode={fullEdit ? 'edit' : 'preview'}
-        onClick={() => (fullEdit ? closeFull() : openFull())}
-      >
-        <Icon name={fullEdit ? 'eye' : 'edit'} size={16}/>
-        <span>{fullEdit
-          ? (state.language === 'he' ? 'תצוגה' : 'Preview')
-          : (state.language === 'he' ? 'עריכת טקסט' : 'Text editor')}</span>
-      </button>
+      {/* Clean bottom action bar. The full editor has its own preview/exit
+          buttons, so this bar is hidden while it's open. */}
+      <div className="action-bar" data-hidden={fullEdit || undefined}>
+        <button className="action-btn action-edit" onClick={openFull}>
+          <Icon name="edit" size={16}/>
+          <span>{state.language === 'he' ? 'עריכת טקסט' : 'Text editor'}</span>
+        </button>
+        <button className="action-btn action-design" onClick={() => setMobileOpen(true)}>
+          <Icon name="sliders" size={16}/>
+          <span>{state.language === 'he' ? 'עיצוב' : 'Design'}</span>
+        </button>
+      </div>
     </div>
   );
 }

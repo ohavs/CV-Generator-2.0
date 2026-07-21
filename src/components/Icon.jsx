@@ -70,9 +70,9 @@ export default function Icon({ name, size = 16, strokeWidth = 1.75, style }) {
     case 'key':
       return <svg {...common}><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>;
     case 'undo':
-      return <svg {...common}><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg>;
+      return <svg {...common}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H8"/></svg>;
     case 'redo':
-      return <svg {...common}><path d="M21 7v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg>;
+      return <svg {...common}><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H16"/></svg>;
     case 'loader':
       return <svg {...common}><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>;
     case 'camera':
