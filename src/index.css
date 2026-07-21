@@ -231,9 +231,11 @@ body[data-exporting] .photo-remove { display: none !important; }
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
   box-shadow: var(--shadow-lg);
   transition: transform 0.12s;
 }
+.action-btn > span { white-space: nowrap; }
 .action-btn:hover { transform: translateY(-1px); }
 .action-edit { background: var(--accent); color: #fff; }
 .action-design { background: var(--ink); color: var(--bg-elevated); }
