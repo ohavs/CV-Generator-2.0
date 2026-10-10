@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,13 +8,13 @@ import EditableBullets from './EditableBullets.jsx';
 // Charter: Classic elegance. Centered serif header, accent section titles with inline underline.
 const CharterTemplate = memo(function CharterTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 12 }}>
+    <section data-section={id} style={{ marginBottom: sp(12) }}>
       <div style={{ marginBottom: 7 }}>
-        <h2 style={{
+        <h2 data-section-title style={{
           fontSize: 12.5, fontWeight: 600, color: accent, margin: 0,
           fontFamily: 'var(--cv-heading)', letterSpacing: '0.03em',
           display: 'inline-block',
@@ -28,7 +28,7 @@ const CharterTemplate = memo(function CharterTemplate({ data, accent, lang, sect
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ textAlign: 'center', marginBottom: 16, paddingBottom: 14, borderBottom: `1px solid #D0CCC4` }}>
+      <header key="personal" data-section="personal" style={{ textAlign: 'center', marginBottom: sp(16), paddingBottom: 14, borderBottom: `1px solid #D0CCC4` }}>
         {showPhoto && (
           <div style={{ display:'flex', justifyContent:'center', marginBottom:10 }}>
             <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={74} accent={accent}/>
@@ -244,7 +244,7 @@ const CharterTemplate = memo(function CharterTemplate({ data, accent, lang, sect
   };
 
   return (
-    <div style={{ padding: '14mm 16mm', fontFamily: 'var(--cv-body)', color: '#1A1A1A', direction: isRtl ? 'rtl' : 'ltr' }}>
+    <div style={{ padding: margin('14mm 16mm'), fontFamily: 'var(--cv-body)', color: '#1A1A1A', fontSize: 11.5, direction: isRtl ? 'rtl' : 'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.())}
     </div>
   );

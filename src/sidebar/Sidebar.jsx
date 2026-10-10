@@ -17,7 +17,7 @@ function SaveBadge({ saving, t }) {
 
 const startOnMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches;
 
-export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, onExport, exporting, onAddJump, onUndo, onRedo, canUndo, canRedo, saving, docs, activeId, onSwitchDoc, onNewDoc, onRenameDoc, onDuplicateDoc, onDeleteDoc }) {
+export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, onExport, exporting, fitScale, onAddJump, onUndo, onRedo, canUndo, canRedo, saving, docs, activeId, onSwitchDoc, onNewDoc, onRenameDoc, onDuplicateDoc, onDeleteDoc }) {
   const t = I18N[state.language];
   // On phones people open the sheet mostly to edit content; on desktop the
   // panel is always visible and design-first is the better entry point.
@@ -99,8 +99,8 @@ export default function Sidebar({ state, setState, isMobileOpen, onCloseMobile, 
       </div>
 
       <div className="sidebar-body">
-        {tab === 'design' && <DesignTab state={state} setState={setState} t={t}/>}
-        {tab === 'sections' && <SectionsTab state={state} setState={setState} t={t}/>}
+        {tab === 'design' && <DesignTab state={state} setState={setState} t={t} fitScale={fitScale}/>}
+        {tab === 'sections' && <SectionsTab state={state} setState={setState} t={t} fitScale={fitScale}/>}
         {tab === 'content' && <ContentTab state={state} setState={setState} t={t} onAddJump={onAddJump}/>}
       </div>
 

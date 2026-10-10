@@ -1,18 +1,61 @@
 import { memo, useState, startTransition } from 'react';
-import { TEMPLATES, ACCENT_PALETTE, FONT_PRESETS, I18N } from '../data.js';
+import { TEMPLATES, ACCENT_PALETTE, FONT_PRESETS, LIMITS, BULLET_STYLES, PHOTO_SHAPES, resolveFonts } from '../data.js';
 import { TemplateThumb } from '../templates/index.jsx';
 import Icon from '../components/Icon.jsx';
+import FitNote from './FitNote.jsx';
 import FontDropdown from '../components/FontDropdown.jsx';
 
-const SCALE_MIN = 0.86;
-const SCALE_MAX = 1.06;
 const INITIAL_TEMPLATES = 6;
 
-function DesignTab({ state, setState, t }) {
+const BULLET_GLYPH = { auto: null, dot: '•', dash: '—', arrow: '›', square: '▪', none: '∅' };
+const PHOTO_LABEL = {
+  he: { auto: 'לפי התבנית', round: 'עגולה', square: 'מרובעת' },
+  en: { auto: 'Template', round: 'Round', square: 'Square' },
+};
+
+// A labelled range slider with its value shown as a percentage. The value
+// resets to 100% on a tap.
+function Slider({ value, limits, onChange, small = 'A', big = 'A' }) {
+  return (
+    <div className="font-scale-row">
+      <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>{small}</span>
+      <input
+        type="range"
+        min={limits.min}
+        max={limits.max}
+        step={limits.step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        style={{ flex: 1 }}
+      />
+      <span style={{ fontSize: 16, color: 'var(--ink-4)' }}>{big}</span>
+      <button className="font-scale-label" onClick={() => onChange(1)} title="100%">
+        {Math.round(value * 100)}%
+      </button>
+    </div>
+  );
+}
+
+function SegToggle({ items, value, onChange }) {
+  return (
+    <span className="seg seg-wrap">
+      {items.map(([id, label, title]) => (
+        <button key={id} data-active={value === id} onClick={() => onChange(id)} title={title}>{label}</button>
+      ))}
+    </span>
+  );
+}
+
+function DesignTab({ state, setState, t, fitScale = 1 }) {
   const lang = state.language;
-  const scalePercent = Math.round((state.fontScale ?? 1) * 100);
+  const he = lang === 'he';
   const [showAllTemplates, setShowAllTemplates] = useState(false);
   const displayTemplates = showAllTemplates ? TEMPLATES : TEMPLATES.slice(0, INITIAL_TEMPLATES);
+  // Updater form: this panel can hold a stale `state` (see the memo below).
+  const update = (patch) => setState(s => ({ ...s, ...patch }));
+  const set = (patch) => startTransition(() => update(patch));
+  const preset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
+  const fonts = resolveFonts(state);
 
   return (
     <>
@@ -25,8 +68,8 @@ function DesignTab({ state, setState, t }) {
             style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, letterSpacing: 0 }}
           >
             {showAllTemplates
-              ? (lang === 'he' ? 'הצג פחות' : 'Show less')
-              : (lang === 'he' ? `הצג עוד (${TEMPLATES.length - INITIAL_TEMPLATES}+)` : `Show more (+${TEMPLATES.length - INITIAL_TEMPLATES})`)}
+              ? (he ? 'הצג פחות' : 'Show less')
+              : (he ? `הצג עוד (${TEMPLATES.length - INITIAL_TEMPLATES}+)` : `Show more (+${TEMPLATES.length - INITIAL_TEMPLATES})`)}
           </button>
         </h3>
         <div className="template-grid">
@@ -35,7 +78,7 @@ function DesignTab({ state, setState, t }) {
               key={tpl.id}
               className="template-tile"
               data-active={state.template === tpl.id}
-              onClick={() => startTransition(() => setState({ ...state, template: tpl.id }))}
+              onClick={() => set({ template: tpl.id })}
               title={tpl.name[lang]}
             >
               <TemplateThumb id={tpl.id} accent={state.accent}/>
@@ -56,14 +99,14 @@ function DesignTab({ state, setState, t }) {
                 className="swatch"
                 data-active={state.accent === c}
                 style={{ background: c }}
-                onClick={() => startTransition(() => setState({ ...state, accent: c }))}
+                onClick={() => set({ accent: c })}
               />
             ))}
             <label className="swatch" style={{ background: 'conic-gradient(red, yellow, green, blue, red)', position: 'relative', cursor: 'pointer' }}>
               <input
                 type="color"
                 value={state.accent}
-                onChange={(e) => startTransition(() => setState({ ...state, accent: e.target.value }))}
+                onChange={(e) => set({ accent: e.target.value })}
                 style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
               />
             </label>
@@ -71,40 +114,114 @@ function DesignTab({ state, setState, t }) {
         </div>
       </div>
 
-      {/* Typography */}
+      {/* Typography: a ready pairing, or heading and body picked separately */}
       <div className="panel-group">
         <h3 className="panel-title">{t.labels.font}</h3>
         <FontDropdown
           value={state.fontPreset}
-          onChange={(id) => startTransition(() => setState({ ...state, fontPreset: id }))}
+          onChange={(id) => set({ fontPreset: id, headingFont: '', bodyFont: '' })}
           presets={FONT_PRESETS}
           lang={lang}
         />
+        <div className="font-split">
+          <div>
+            <div className="font-split-label">{he ? 'כותרות' : 'Headings'}</div>
+            <FontDropdown
+              single
+              value={state.headingFont || ''}
+              onChange={(id) => set({ headingFont: id })}
+              presets={FONT_PRESETS}
+              lang={lang}
+              defaultLabel={he ? 'לפי הזוג' : 'From pairing'}
+              fallbackStack={preset.heading}
+              sub={he ? 'שם, כותרות' : 'Name, headings'}
+            />
+          </div>
+          <div>
+            <div className="font-split-label">{he ? 'גוף הטקסט' : 'Body text'}</div>
+            <FontDropdown
+              single
+              value={state.bodyFont || ''}
+              onChange={(id) => set({ bodyFont: id })}
+              presets={FONT_PRESETS}
+              lang={lang}
+              defaultLabel={he ? 'לפי הזוג' : 'From pairing'}
+              fallbackStack={preset.body}
+              sub={he ? 'תיאורים, פרטים' : 'Descriptions, details'}
+            />
+          </div>
+        </div>
+        <div className="panel-hint" style={{ fontFamily: fonts.body }}>
+          {he ? 'בחירה של זוג מוכן מאפסת את הבחירה הנפרדת.' : 'Picking a pairing resets the separate choices.'}
+        </div>
       </div>
 
-      {/* Font scale */}
+      {/* Text size and spacing */}
       <div className="panel-group">
-        <h3 className="panel-title">{lang === 'he' ? 'גודל טקסט' : 'Text size'}</h3>
+        <h3 className="panel-title">{he ? 'גודל טקסט' : 'Text size'}</h3>
         <div className="panel-card">
-          <div className="font-scale-row">
-            <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>A</span>
-            <input
-              type="range"
-              min={SCALE_MIN}
-              max={SCALE_MAX}
-              step={0.02}
-              value={state.fontScale ?? 1}
-              onChange={(e) => setState({ ...state, fontScale: parseFloat(e.target.value) })}
-              style={{ flex: 1 }}
+          <Slider
+            value={state.fontScale ?? 1}
+            limits={LIMITS.textScale}
+            onChange={(v) => update({ fontScale: v })}
+          />
+          <div className="panel-hint">
+            {he
+              ? 'כל המסמך. לגודל של מקטע אחד — בלשונית "מקטעים".'
+              : 'The whole CV. For one section, use the Sections tab.'}
+          </div>
+          {fitScale < 0.995 && (
+            <FitNote fitScale={fitScale} he={he}/>
+          )}
+        </div>
+      </div>
+
+      <div className="panel-group">
+        <h3 className="panel-title">{he ? 'ריווח בין מקטעים' : 'Space between sections'}</h3>
+        <div className="panel-card">
+          <Slider
+            value={state.sectionSpacing ?? 1}
+            limits={LIMITS.spacing}
+            onChange={(v) => update({ sectionSpacing: v })}
+            small="≡" big="☰"
+          />
+        </div>
+      </div>
+
+      {/* Details */}
+      <div className="panel-group">
+        <h3 className="panel-title">{he ? 'פרטים' : 'Details'}</h3>
+        <div className="panel-card">
+          <div className="field-row">
+            <label>{he ? 'תבליטים' : 'Bullets'}</label>
+            <SegToggle
+              value={state.bulletStyle || 'auto'}
+              onChange={(id) => set({ bulletStyle: id })}
+              items={BULLET_STYLES.map(id => [id, BULLET_GLYPH[id] ?? (he ? 'אוטו׳' : 'Auto'),
+                id === 'auto' ? (he ? 'לפי התבנית' : 'Template default') : id === 'none' ? (he ? 'ללא' : 'None') : id])}
             />
-            <span style={{ fontSize: 16, color: 'var(--ink-4)' }}>A</span>
-            <span className="font-scale-label">{scalePercent}%</span>
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--ink-4)', marginTop: 6 }}>
-            {lang === 'he'
-              ? 'שים לב: גודל גדול מדי עלול לגרום לתוכן לחרוג מהדף'
-              : 'Note: large sizes may cause content to overflow the page'}
+          <div className="field-row">
+            <label>{he ? 'תמונת פרופיל' : 'Profile photo'}</label>
+            <span className="seg" style={{ padding: 3 }}>
+              <button data-active={state.showPhoto !== false} onClick={() => set({ showPhoto: true })} title={he ? 'הצג' : 'Show'}>
+                <Icon name="eye" size={14}/>
+              </button>
+              <button data-active={state.showPhoto === false} onClick={() => set({ showPhoto: false })} title={he ? 'הסתר' : 'Hide'}>
+                <Icon name="eye-off" size={14}/>
+              </button>
+            </span>
           </div>
+          {state.showPhoto !== false && (
+            <div className="field-row">
+              <label>{he ? 'צורת התמונה' : 'Photo shape'}</label>
+              <SegToggle
+                value={state.photoShape || 'auto'}
+                onChange={(id) => set({ photoShape: id })}
+                items={PHOTO_SHAPES.map(id => [id, PHOTO_LABEL[lang][id]])}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -115,64 +232,33 @@ function DesignTab({ state, setState, t }) {
           <div className="field-row">
             <label>{t.labels.direction}</label>
             <div className="seg">
-              <button data-active={state.language === 'he'} onClick={() => setState({ ...state, language: 'he' })}>עברית</button>
-              <button data-active={state.language === 'en'} onClick={() => setState({ ...state, language: 'en' })}>English</button>
+              <button data-active={state.language === 'he'} onClick={() => update({ language: 'he' })}>עברית</button>
+              <button data-active={state.language === 'en'} onClick={() => update({ language: 'en' })}>English</button>
             </div>
           </div>
           <div className="field-row">
             <label>{t.labels.darkMode}</label>
             <span className="seg" style={{ padding: 3 }}>
-              <button
-                data-active={!state.darkEdit}
-                onClick={() => setState({ ...state, darkEdit: false })}
-                style={{ padding: '6px 12px', borderRadius: 7, background: !state.darkEdit ? 'var(--surface)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: 5, boxShadow: !state.darkEdit ? 'var(--shadow-sm)' : 'none' }}
-              >
+              <button data-active={!state.darkEdit} onClick={() => update({ darkEdit: false })}>
                 <Icon name="sun" size={14}/>
               </button>
-              <button
-                data-active={state.darkEdit}
-                onClick={() => setState({ ...state, darkEdit: true })}
-                style={{ padding: '6px 12px', borderRadius: 7, background: state.darkEdit ? 'var(--surface)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: 5, boxShadow: state.darkEdit ? 'var(--shadow-sm)' : 'none' }}
-              >
+              <button data-active={state.darkEdit} onClick={() => update({ darkEdit: true })}>
                 <Icon name="moon" size={14}/>
-              </button>
-            </span>
-          </div>
-          <div className="field-row">
-            <label>{lang === 'he' ? 'תמונת פרופיל' : 'Profile photo'}</label>
-            <span className="seg" style={{ padding: 3 }}>
-              <button
-                data-active={state.showPhoto !== false}
-                onClick={() => setState({ ...state, showPhoto: true })}
-                style={{ padding: '6px 12px', borderRadius: 7, background: state.showPhoto !== false ? 'var(--surface)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: 5, boxShadow: state.showPhoto !== false ? 'var(--shadow-sm)' : 'none' }}
-              >
-                <Icon name="eye" size={14}/>
-              </button>
-              <button
-                data-active={state.showPhoto === false}
-                onClick={() => setState({ ...state, showPhoto: false })}
-                style={{ padding: '6px 12px', borderRadius: 7, background: state.showPhoto === false ? 'var(--surface)' : 'transparent', display: 'inline-flex', alignItems: 'center', gap: 5, boxShadow: state.showPhoto === false ? 'var(--shadow-sm)' : 'none' }}
-              >
-                <Icon name="eye-off" size={14}/>
               </button>
             </span>
           </div>
         </div>
       </div>
-
     </>
   );
 }
 
 // Only re-render DesignTab when design-related state changes — never when CV data changes
+const DESIGN_KEYS = ['template', 'accent', 'fontPreset', 'headingFont', 'bodyFont', 'fontScale', 'sectionSpacing',
+  'bulletStyle', 'photoShape', 'showPhoto', 'darkEdit', 'language', 'sections'];
 export default memo(DesignTab, (prev, next) =>
-  prev.state.template   === next.state.template  &&
-  prev.state.accent     === next.state.accent     &&
-  prev.state.fontPreset === next.state.fontPreset &&
-  prev.state.fontScale  === next.state.fontScale  &&
-  prev.state.darkEdit   === next.state.darkEdit   &&
-  prev.state.language   === next.state.language   &&
-  prev.state.sections   === next.state.sections   &&
+  DESIGN_KEYS.every(k => prev.state[k] === next.state[k]) &&
+  prev.fitScale === next.fitScale &&
   prev.setState === next.setState &&
-  prev.t        === next.t
+  prev.t === next.t
 );

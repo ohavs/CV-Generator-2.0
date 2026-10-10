@@ -1,24 +1,24 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
 
 const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Label = ({ children }) => (
-    <h2 style={{
+    <h2 data-section-title style={{
       fontSize: 9, letterSpacing:'0.24em', textTransform:'uppercase',
       fontWeight:600, color:'#999', margin:'0 0 10px', fontFamily:'var(--cv-body)',
     }}>{children}</h2>
   );
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 18 }}>
+    <section data-section={id} style={{ marginBottom: sp(18) }}>
       <Label>{title}</Label>
       {children}
     </section>
@@ -26,7 +26,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom:28 }}>
+      <header key="personal" data-section="personal" style={{ marginBottom: sp(28) }}>
         <div style={{ display:'flex', alignItems:'center', gap:16 }}>
           {showPhoto && (
             <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={66} accent={accent}/>
@@ -62,7 +62,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
       <Section key="experience" id="experience" title={t.sections.experience}>
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
           {(data.experience||[]).map((j,i) => (
-            <div key={i} style={{ display:'grid', gridTemplateColumns:'80px 1fr', gap:16 }}>
+            <div key={i} style={{ display:'grid', gridTemplateColumns:'minmax(80px, min-content) 1fr', gap:16 }}>
               <div style={{ fontSize:9.5, color:'#999', paddingTop:3, letterSpacing:'0.02em' }}>
                 {formatRange(j.start,j.end,lang)}
               </div>
@@ -85,7 +85,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
     education: () => (
       <Section key="education" id="education" title={t.sections.education}>
         {(data.education||[]).map((e,i) => (
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'80px 1fr', gap:16, marginBottom:8 }}>
+          <div key={i} style={{ display:'grid', gridTemplateColumns:'minmax(80px, min-content) 1fr', gap:16, marginBottom:8 }}>
             <div style={{ fontSize:9.5, color:'#999', paddingTop:3 }}>{formatRange(e.start,e.end,lang)}</div>
             <div>
               <Editable value={e.degree} onChange={(v)=>onEdit(['education',i,'degree'],v)} style={{ fontSize:12.5, fontWeight:500 }}/>
@@ -103,7 +103,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
       <Section key="skills" id="skills" title={t.sections.skills}>
         <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
           {(data.skills||[]).map((sk,i) => (
-            <div key={i} style={{ display:'grid', gridTemplateColumns:'80px 1fr', gap:16, fontSize:11 }}>
+            <div key={i} style={{ display:'grid', gridTemplateColumns:'minmax(80px, min-content) 1fr', gap:16, fontSize:11 }}>
               <Editable value={sk.category} onChange={(v)=>onEdit(['skills',i,'category'],v)}
                 style={{ color:'#999', fontSize:9.5, paddingTop:3, textTransform:'uppercase', letterSpacing:'0.08em' }}/>
               <Editable value={(sk.items||[]).join(', ')} onChange={(v)=>onEdit(['skills',i,'items'],v.split(/\s*,\s*/))}
@@ -143,7 +143,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
     certifications: () => (
       <Section key="certifications" id="certifications" title={t.sections.certifications}>
         {(data.certifications||[]).map((c,i) => (
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'80px 1fr', gap:16, fontSize:11, marginBottom:4 }}>
+          <div key={i} style={{ display:'grid', gridTemplateColumns:'minmax(80px, min-content) 1fr', gap:16, fontSize:11, marginBottom:4 }}>
             <Editable value={c.date} onChange={(v)=>onEdit(['certifications',i,'date'],v)} style={{ color:'#999', fontSize:9.5, paddingTop:3 }}/>
             <div>
               <Editable value={c.name} onChange={(v)=>onEdit(['certifications',i,'name'],v)} style={{ fontWeight:500 }}/>
@@ -157,7 +157,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
     awards: () => (
       <Section key="awards" id="awards" title={t.sections.awards}>
         {(data.awards||[]).map((a,i) => (
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'80px 1fr', gap:16, fontSize:11, marginBottom:4 }}>
+          <div key={i} style={{ display:'grid', gridTemplateColumns:'minmax(80px, min-content) 1fr', gap:16, fontSize:11, marginBottom:4 }}>
             <Editable value={a.date} onChange={(v)=>onEdit(['awards',i,'date'],v)} style={{ color:'#999', fontSize:9.5, paddingTop:3 }}/>
             <div>
               <Editable value={a.name} onChange={(v)=>onEdit(['awards',i,'name'],v)} style={{ fontWeight:500 }}/>
@@ -171,7 +171,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
     volunteering: () => (
       <Section key="volunteering" id="volunteering" title={t.sections.volunteering}>
         {(data.volunteering||[]).map((v,i) => (
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'80px 1fr', gap:16, marginBottom:8 }}>
+          <div key={i} style={{ display:'grid', gridTemplateColumns:'minmax(80px, min-content) 1fr', gap:16, marginBottom:8 }}>
             <div style={{ fontSize:9.5, color:'#999', paddingTop:3 }}>{formatRange(v.start,v.end,lang)}</div>
             <div>
               <Editable value={v.role} onChange={(vv)=>onEdit(['volunteering',i,'role'],vv)} style={{ fontSize:12, fontWeight:500 }}/>
@@ -188,7 +188,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
     publications: () => (
       <Section key="publications" id="publications" title={t.sections.publications}>
         {(data.publications||[]).map((p,i) => (
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'80px 1fr', gap:16, marginBottom:4 }}>
+          <div key={i} style={{ display:'grid', gridTemplateColumns:'minmax(80px, min-content) 1fr', gap:16, marginBottom:4 }}>
             <Editable value={p.date} onChange={(v)=>onEdit(['publications',i,'date'],v)} style={{ color:'#999', fontSize:9.5, paddingTop:3 }}/>
             <div style={{ fontSize:11 }}>
               <Editable value={p.title} onChange={(v)=>onEdit(['publications',i,'title'],v)} style={{ fontWeight:500 }}/>
@@ -209,7 +209,7 @@ const MinimalTemplate = memo(function MinimalTemplate({ data, accent, lang, sect
   };
 
   return (
-    <div style={{ padding:'16mm 20mm', fontFamily:'var(--cv-body)', color:'#1A1A1A', fontSize:11.5, direction:isRtl?'rtl':'ltr' }}>
+    <div style={{ padding:margin('16mm 20mm'), fontFamily:'var(--cv-body)', color:'#1A1A1A', fontSize:11.5, direction:isRtl?'rtl':'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.())}
     </div>
   );

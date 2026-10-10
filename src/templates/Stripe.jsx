@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,14 +8,14 @@ import EditableBullets from './EditableBullets.jsx';
 // Stripe: Clean modern with bold left accent bar, crisp typography
 const StripeTemplate = memo(function StripeTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 16, display:'flex', gap:16 }}>
+    <section data-section={id} style={{ marginBottom: sp(16), display:'flex', gap:16 }}>
       <div style={{ width:3, background:accent, borderRadius:2, flexShrink:0, marginTop:2 }}/>
       <div style={{ flex:1 }}>
-        <h2 style={{
+        <h2 data-section-title style={{
           fontSize:10.5, letterSpacing:'0.16em', textTransform:'uppercase',
           fontWeight:700, color:accent, margin:'0 0 9px', fontFamily:'var(--cv-body)',
         }}>{title}</h2>
@@ -26,7 +26,7 @@ const StripeTemplate = memo(function StripeTemplate({ data, accent, lang, sectio
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom:22, paddingBottom:16, borderBottom:`2px solid #111` }}>
+      <header key="personal" data-section="personal" style={{ marginBottom: sp(22), paddingBottom:16, borderBottom:`2px solid #111` }}>
         <div style={{ display:'flex', alignItems:'center', gap:16 }}>
         {showPhoto && (
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={68} accent={accent}/>
@@ -38,7 +38,7 @@ const StripeTemplate = memo(function StripeTemplate({ data, accent, lang, sectio
             <Editable as="div" {...F(['personal','title'])}
               style={{ fontSize:13, color:accent, marginTop:6, fontWeight:500, letterSpacing:'0.02em' }}/>
           </div>
-          <div style={{ display:'flex', flexDirection:'column', gap:4, fontSize:10, color:'#555', textAlign: isRtl?'left':'right', flexShrink:0 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:4, fontSize:10, color:'#555', textAlign: isRtl?'left':'right', maxWidth:'48%' }}>
             <Editable {...F(['personal','email'])}/>
             <Editable {...F(['personal','phone'])}/>
             <Editable {...F(['personal','location'])}/>
@@ -65,7 +65,7 @@ const StripeTemplate = memo(function StripeTemplate({ data, accent, lang, sectio
                 <div style={{ display:'flex', gap:6, alignItems:'baseline', flexWrap:'wrap' }}>
                   <Editable value={j.role} onChange={(v)=>onEdit(['experience',i,'role'],v)}
                     style={{ fontSize:13, fontWeight:700, color:'#111', fontFamily:'var(--cv-body)' }}/>
-                  <span style={{ color:'#ccc' }}>at</span>
+                  <span style={{ color:'#ccc' }}>{isRtl ? '·' : 'at'}</span>
                   <Editable value={j.company} onChange={(v)=>onEdit(['experience',i,'company'],v)}
                     style={{ fontSize:12.5, color:accent, fontFamily:'var(--cv-heading)' }}/>
                 </div>
@@ -181,7 +181,7 @@ const StripeTemplate = memo(function StripeTemplate({ data, accent, lang, sectio
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8, marginBottom:2 }}>
                 <div>
                   <Editable value={v.role} onChange={(vv)=>onEdit(['volunteering',i,'role'],vv)} style={{ fontSize:12.5, fontWeight:700 }}/>
-                  <span style={{ color:'#ccc', fontSize:11, margin:'0 5px' }}>at</span>
+                  <span style={{ color:'#ccc', fontSize:11, margin:'0 5px' }}>{isRtl ? '·' : 'at'}</span>
                   <Editable value={v.org} onChange={(vv)=>onEdit(['volunteering',i,'org'],vv)} style={{ fontSize:12, color:accent }}/>
                 </div>
                 <span style={{ fontSize:10, color:'#888', whiteSpace:'nowrap' }}>{formatRange(v.start,v.end,lang)}</span>
@@ -210,7 +210,7 @@ const StripeTemplate = memo(function StripeTemplate({ data, accent, lang, sectio
   };
 
   return (
-    <div style={{ padding:'14mm 16mm', fontFamily:'var(--cv-body)', color:'#1A1A1A', direction:isRtl?'rtl':'ltr' }}>
+    <div style={{ padding:margin('14mm 16mm'), fontFamily:'var(--cv-body)', color:'#1A1A1A', fontSize:11.5, direction:isRtl?'rtl':'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.())}
     </div>
   );

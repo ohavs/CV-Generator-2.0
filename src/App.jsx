@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useLayoutEffect, useCallback, useReducer } from 'react';
-import { DEFAULT_STATE, FONT_PRESETS, I18N } from './data.js';
+import { useState, useEffect, useRef, useLayoutEffect, useCallback, useReducer, useMemo } from 'react';
+import { DEFAULT_STATE, LIMITS, clampTo, resolveFonts } from './data.js';
 import { pruneLangData } from './entryUtils.js';
 import { loadStore, saveStore, activeDoc, docList, freshDoc, docName } from './docStore.js';
 import { TemplateRoot } from './templates/index.jsx';
@@ -45,6 +45,7 @@ export default function App() {
   const [exporting, setExporting] = useState(false);
   const [zoom, setZoom] = useState(null);
   const [autoZoom, setAutoZoom] = useState(1);
+  const [fitScale, setFitScale] = useState(1); // how far AutoFit shrank the page
   const [mobileOpen, setMobileOpen] = useState(false);
   const [fullEdit, setFullEdit] = useState(false);
   const saveTimerRef = useRef(null);
@@ -123,8 +124,12 @@ export default function App() {
   const canRedo = historyRef.current.future.length > 0;
 
   /* ---- State mutations (all record history) ----------------------------- */
-  const setState = useCallback((next) => {
+  // Accepts a state or an updater. Panels that skip re-renders while the CV
+  // text changes (DesignTab is memoised on design keys only) must use the
+  // updater, or they'd write back the text as it was when they last rendered.
+  const setState = useCallback((nextOrFn) => {
     const prev = stateRef.current;
+    const next = typeof nextOrFn === 'function' ? nextOrFn(prev) : nextOrFn;
     pushPast(prev, 'set:' + (changedKeys(prev, next) || 'all'));
     commit(next);
   }, [pushPast, commit]);
@@ -255,7 +260,17 @@ export default function App() {
   }, [loadDoc]);
 
   const data = state.data[state.language];
-  const fontPreset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
+  const fonts = resolveFonts(state);
+  const design = useMemo(() => ({
+    textScale: clampTo(state.fontScale ?? 1, LIMITS.textScale),
+    // Saved values are clamped too, so no document — however old or edited —
+    // can ask a template for a size the layout checker hasn't covered.
+    sectionScale: Object.fromEntries(Object.entries(state.sectionScale || {})
+      .map(([id, v]) => [id, clampTo(Number(v) || 1, LIMITS.sectionScale)])),
+    spacing: clampTo(state.sectionSpacing ?? 1, LIMITS.spacing),
+    bulletStyle: state.bulletStyle,
+    photoShape: state.photoShape,
+  }), [state.fontScale, state.sectionScale, state.sectionSpacing, state.bulletStyle, state.photoShape]);
 
   const isMobile = useIsMobile();
 
@@ -322,7 +337,7 @@ export default function App() {
     if (exporting) return;
     setExporting(true);
     try {
-      // Lazy-loaded so jsPDF + html-to-image stay out of the initial bundle.
+      // Lazy-loaded so jsPDF stays out of the initial bundle.
       const { exportPdf } = await import('./pdfExport.js');
       const base = docName(stateRef.current).trim().replace(/\s+/g, '-');
       await exportPdf(`${base || 'cv'}.pdf`);
@@ -357,8 +372,8 @@ export default function App() {
       data-editor-theme={state.darkEdit ? 'dark' : 'light'}
       style={{
         '--accent': state.accent,
-        '--cv-heading': fontPreset.heading,
-        '--cv-body': fontPreset.body,
+        '--cv-heading': fonts.heading,
+        '--cv-body': fonts.body,
       }}
     >
       <div className="preview-area" ref={previewAreaRef}>
@@ -370,15 +385,16 @@ export default function App() {
             className="preview-page"
             onBlur={schedulePrune}
             style={{
-              '--cv-heading': fontPreset.heading,
-              '--cv-body': fontPreset.body,
+              '--cv-heading': fonts.heading,
+              '--cv-body': fonts.body,
             }}
           >
             <AutoFit
-              fontScale={state.fontScale ?? 1}
-              deps={[state.template, state.language, state.sections, state.accent, state.fontPreset]}
+              onScale={setFitScale}
+              deps={[state.template, state.language, state.sections, fonts.heading, fonts.body, design]}
             >
               <TemplateRoot
+                design={design}
                 template={state.template}
                 data={data}
                 accent={state.accent}
@@ -425,6 +441,7 @@ export default function App() {
         onCloseMobile={() => setMobileOpen(false)}
         onExport={handleExport}
         exporting={exporting}
+        fitScale={fitScale}
         onAddJump={jumpToSection}
         onUndo={undo}
         onRedo={redo}

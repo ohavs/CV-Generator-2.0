@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,11 +8,11 @@ import EditableBullets from './EditableBullets.jsx';
 // Nordic: Scandinavian minimalism — spacious, elegant, two-column grid
 const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Label = ({ children }) => (
-    <div style={{
+    <div data-section-title style={{
       fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
       fontWeight: 700, color: accent, fontFamily: 'var(--cv-body)',
       marginBottom: 10, paddingBottom: 5,
@@ -21,7 +21,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
   );
 
   const Row = ({ label, children }) => (
-    <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '0 18px', marginBottom: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(80px, min-content) 1fr', gap: '0 18px', marginBottom: 14 }}>
       <div style={{ fontSize: 9, color: '#999', letterSpacing: '0.15em', textTransform: 'uppercase', paddingTop: 2, fontFamily: 'var(--cv-body)' }}>
         {label}
       </div>
@@ -31,7 +31,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom: 30, paddingBottom: 22, borderBottom: '1px solid #E8E3DC' }}>
+      <header key="personal" data-section="personal" style={{ marginBottom: sp(30), paddingBottom: 22, borderBottom: '1px solid #E8E3DC' }}>
         <div style={{ display:'flex', alignItems:'center', gap:16 }}>
           {showPhoto && (
             <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={70} accent={accent}/>
@@ -60,14 +60,14 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </header>
     ),
     summary: () => (
-      <div key="summary" style={{ marginBottom: 22 }}>
+      <div key="summary" data-section="summary" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.summary}</Label>
         <Editable {...F(['summary'],{ multiline:true, placeholder:t.labels.summaryPlaceholder, ai:true })}
           as="p" style={{ margin:0, fontSize:12, lineHeight:1.75, color:'#333', maxWidth:'58ch' }}/>
       </div>
     ),
     experience: () => (
-      <div key="experience" style={{ marginBottom: 22 }}>
+      <div key="experience" data-section="experience" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.experience}</Label>
         {(data.experience||[]).map((j,i) => (
           <Row key={i} label={formatRange(j.start,j.end,lang)}>
@@ -87,7 +87,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     education: () => (
-      <div key="education" style={{ marginBottom: 22 }}>
+      <div key="education" data-section="education" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.education}</Label>
         {(data.education||[]).map((e,i) => (
           <Row key={i} label={formatRange(e.start,e.end,lang)}>
@@ -102,7 +102,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     skills: () => (
-      <div key="skills" style={{ marginBottom: 22 }}>
+      <div key="skills" data-section="skills" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.skills}</Label>
         {(data.skills||[]).map((sk,i) => (
           <Row key={i} label={sk.category}>
@@ -113,7 +113,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     languages: () => (
-      <div key="languages" style={{ marginBottom: 22 }}>
+      <div key="languages" data-section="languages" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.languages}</Label>
         <div style={{ display:'flex', gap:'6px 24px', flexWrap:'wrap', fontSize:11.5 }}>
           {(data.languages||[]).map((l,i) => (
@@ -127,7 +127,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     projects: () => (
-      <div key="projects" style={{ marginBottom: 22 }}>
+      <div key="projects" data-section="projects" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.projects}</Label>
         {(data.projects||[]).map((p,i) => (
           <div key={i} style={{ marginBottom:12 }}>
@@ -142,7 +142,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     certifications: () => (
-      <div key="certifications" style={{ marginBottom: 22 }}>
+      <div key="certifications" data-section="certifications" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.certifications}</Label>
         {(data.certifications||[]).map((c,i) => (
           <Row key={i} label={c.date}>
@@ -156,13 +156,13 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     hobbies: () => (
-      <div key="hobbies" style={{ marginBottom: 22 }}>
+      <div key="hobbies" data-section="hobbies" style={{ marginBottom: sp(22) }}>
         <Label>{t.sections.hobbies}</Label>
         <Editable {...F(['hobbies'],{ multiline:true, ai:true })} as="div" style={{ fontSize:11.5, color:'#555', lineHeight:1.6 }}/>
       </div>
     ),
     awards: () => (
-      <div key="awards" style={{ marginBottom: 20 }}>
+      <div key="awards" data-section="awards" style={{ marginBottom: sp(20) }}>
         <Label>{t.sections.awards}</Label>
         {(data.awards||[]).map((a,i) => (
           <Row key={i} label={a.date}>
@@ -176,7 +176,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     volunteering: () => (
-      <div key="volunteering" style={{ marginBottom: 20 }}>
+      <div key="volunteering" data-section="volunteering" style={{ marginBottom: sp(20) }}>
         <Label>{t.sections.volunteering}</Label>
         {(data.volunteering||[]).map((v,i) => (
           <Row key={i} label={formatRange(v.start,v.end,lang)}>
@@ -192,7 +192,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
       </div>
     ),
     publications: () => (
-      <div key="publications" style={{ marginBottom: 20 }}>
+      <div key="publications" data-section="publications" style={{ marginBottom: sp(20) }}>
         <Label>{t.sections.publications}</Label>
         {(data.publications||[]).map((p,i) => (
           <Row key={i} label={p.date}>
@@ -209,7 +209,7 @@ const NordicTemplate = memo(function NordicTemplate({ data, accent, lang, sectio
   };
 
   return (
-    <div style={{ padding:'16mm 18mm 14mm', fontFamily:'var(--cv-body)', color:'#1A1A1A', direction:isRtl?'rtl':'ltr' }}>
+    <div style={{ padding:margin('16mm 18mm 14mm'), fontFamily:'var(--cv-body)', color:'#1A1A1A', fontSize:11.5, direction:isRtl?'rtl':'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.()||(renderMap[id]===null?null:null))}
     </div>
   );

@@ -1,10 +1,42 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
+import FitNote from './FitNote.jsx';
+import { I18N, LIMITS, clampTo } from '../data.js';
+import { labelsFor } from '../templates/helpers.js';
 
-export default function SectionsTab({ state, setState, t }) {
+const round2 = (v) => Math.round(v * 100) / 100;
+
+// − 100% + : one section's text size. Tapping the number resets it.
+function SizeStepper({ value, onChange, lang }) {
+  const { min, max, step } = LIMITS.sectionScale;
+  const he = lang === 'he';
+  return (
+    <span className="size-stepper" title={he ? 'גודל הטקסט במקטע' : 'Text size in this section'}>
+      <button disabled={value <= min + 1e-6} onClick={() => onChange(round2(clampTo(value - step, LIMITS.sectionScale)))}
+        aria-label={he ? 'הקטנת טקסט' : 'Smaller text'}>
+        <Icon name="minus" size={12}/>
+      </button>
+      <button className="size-value" data-changed={value !== 1 || undefined} onClick={() => onChange(1)}
+        aria-label={he ? 'איפוס ל-100%' : 'Reset to 100%'}>
+        {Math.round(value * 100)}%
+      </button>
+      <button disabled={value >= max - 1e-6} onClick={() => onChange(round2(clampTo(value + step, LIMITS.sectionScale)))}
+        aria-label={he ? 'הגדלת טקסט' : 'Larger text'}>
+        <Icon name="plus" size={12}/>
+      </button>
+    </span>
+  );
+}
+
+export default function SectionsTab({ state, setState, fitScale = 1 }) {
   const lang = state.language;
+  const he = lang === 'he';
+  const data = state.data[lang];
+  const labels = labelsFor(lang, data);
   const [draggingIdx, setDraggingIdx] = useState(null);
   const [hoverIdx, setHoverIdx] = useState(null);
+  const [renaming, setRenaming] = useState(null); // section id being renamed
+  const [draft, setDraft] = useState('');
 
   const toggleVis = (idx) => {
     const next = state.sections.map((s, i) => i === idx ? { ...s, visible: !s.visible } : s);
@@ -19,10 +51,39 @@ export default function SectionsTab({ state, setState, t }) {
     setState({ ...state, sections: next });
   };
 
+  const scaleOf = (id) => state.sectionScale?.[id] ?? 1;
+  const setScale = (id, v) => {
+    const next = { ...(state.sectionScale || {}) };
+    if (v === 1) delete next[id]; else next[id] = v;
+    setState({ ...state, sectionScale: next });
+  };
+  const anyScaled = Object.values(state.sectionScale || {}).some(v => v !== 1);
+
+  // A title is content (it differs per language), so it lives with the data.
+  const startRename = (id) => { setRenaming(id); setDraft(labels.sections[id]); };
+  const commitRename = () => {
+    const id = renaming;
+    setRenaming(null);
+    if (!id) return;
+    const clean = draft.replace(/\s+/g, ' ').trim().slice(0, LIMITS.titleLength);
+    const titles = { ...(data.sectionTitles || {}) };
+    if (!clean || clean === I18N[lang].sections[id]) delete titles[id]; else titles[id] = clean;
+    if ((data.sectionTitles?.[id] ?? '') === (titles[id] ?? '')) return;
+    setState({ ...state, data: { ...state.data, [lang]: { ...data, sectionTitles: titles } } });
+  };
+
   return (
     <>
       <div className="panel-group">
-        <h3 className="panel-title">{lang === 'he' ? 'סדר ותצוגת חלקים' : 'Order & visibility'}</h3>
+        <h3 className="panel-title">
+          {he ? 'סדר, גודל ותצוגה' : 'Order, size & visibility'}
+          {anyScaled && (
+            <button onClick={() => setState({ ...state, sectionScale: {} })}
+              style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, letterSpacing: 0 }}>
+              {he ? 'איפוס גדלים' : 'Reset sizes'}
+            </button>
+          )}
+        </h3>
         <div className="section-list">
           {state.sections.map((s, i) => (
             <div
@@ -30,7 +91,7 @@ export default function SectionsTab({ state, setState, t }) {
               className="section-row"
               data-hidden={!s.visible}
               data-dragging={draggingIdx === i}
-              draggable
+              draggable={renaming !== s.id}
               onDragStart={() => setDraggingIdx(i)}
               onDragEnd={() => { setDraggingIdx(null); setHoverIdx(null); }}
               onDragOver={(e) => { e.preventDefault(); setHoverIdx(i); }}
@@ -46,16 +107,46 @@ export default function SectionsTab({ state, setState, t }) {
                   <Icon name="chevron-down" size={13}/>
                 </button>
               </span>
-              <span className="section-label">{t.sections[s.id]}</span>
+
+              {renaming === s.id ? (
+                <input
+                  className="section-rename"
+                  autoFocus
+                  value={draft}
+                  maxLength={LIMITS.titleLength}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onBlur={commitRename}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.currentTarget.blur();
+                    if (e.key === 'Escape') { setRenaming(null); }
+                  }}
+                />
+              ) : s.id === 'personal' ? (
+                // The header has no title on the page, so there is nothing to rename.
+                <span className="section-label">{labels.sections[s.id]}</span>
+              ) : (
+                <button className="section-label section-label-btn" onClick={() => startRename(s.id)}
+                  title={he ? 'שינוי שם המקטע' : 'Rename section'}>
+                  <span>{labels.sections[s.id]}</span>
+                  <Icon name="edit" size={11}/>
+                </button>
+              )}
+
+              <SizeStepper value={scaleOf(s.id)} onChange={(v) => setScale(s.id, v)} lang={lang}/>
               <button className="toggle-vis" onClick={() => toggleVis(i)} title={s.visible ? 'Hide' : 'Show'}>
                 <Icon name={s.visible ? 'eye' : 'eye-off'} size={14}/>
               </button>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 11.5, color: 'var(--ink-4)', marginTop: 8, lineHeight: 1.5 }}>
-          {lang === 'he' ? 'חצים לשינוי סדר · עין להצגה/הסתרה' : 'Arrows to reorder · eye to show/hide'}
+        <div className="panel-hint" style={{ marginTop: 8 }}>
+          {he
+            ? 'חצים לשינוי סדר · לחיצה על שם לשינוי שלו · − / + לגודל הטקסט של המקטע · עין להצגה/הסתרה'
+            : 'Arrows reorder · tap a name to rename it · − / + sizes that section’s text · eye shows/hides'}
         </div>
+        {fitScale < 0.995 && (
+          <FitNote fitScale={fitScale} he={he}/>
+        )}
       </div>
     </>
   );

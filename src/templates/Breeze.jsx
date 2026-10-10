@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,12 +8,12 @@ import EditableBullets from './EditableBullets.jsx';
 // Breeze: Clean modern split header, minimal section labels with accent underline
 const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 11 }}>
-      <h2 style={{
+    <section data-section={id} style={{ marginBottom: sp(11) }}>
+      <h2 data-section-title style={{
         fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
         fontWeight: 600, color: accent, margin: '0 0 6px',
         paddingBottom: 4, borderBottom: `1px solid ${accent}`,
@@ -25,7 +25,7 @@ const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sectio
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom: 14 }}>
+      <header key="personal" data-section="personal" style={{ marginBottom: sp(14) }}>
         <div style={{ display:'flex', alignItems:'center', gap:16 }}>
         {showPhoto && (
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={66} accent={accent}/>
@@ -37,7 +37,7 @@ const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sectio
             <Editable as="div" {...F(['personal', 'title'])}
               style={{ fontSize: 12.5, color: '#555', marginTop: 5, fontWeight: 400, letterSpacing: '0.01em' }}/>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 10, color: '#555', textAlign: isRtl ? 'left' : 'right', flexShrink: 0, paddingTop: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 10, color: '#555', textAlign: isRtl ? 'left' : 'right', maxWidth: '48%', paddingTop: 4 }}>
             <Editable {...F(['personal', 'email'])}/>
             <Editable {...F(['personal', 'phone'])}/>
             <Editable {...F(['personal', 'location'])}/>
@@ -233,7 +233,7 @@ const BreezeTemplate = memo(function BreezeTemplate({ data, accent, lang, sectio
   };
 
   return (
-    <div style={{ padding: '14mm 16mm', fontFamily: 'var(--cv-body)', color: '#1A1A1A', direction: isRtl ? 'rtl' : 'ltr' }}>
+    <div style={{ padding: margin('14mm 16mm'), fontFamily: 'var(--cv-body)', color: '#1A1A1A', fontSize: 11, direction: isRtl ? 'rtl' : 'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.())}
     </div>
   );

@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,14 +8,14 @@ import EditableBullets from './EditableBullets.jsx';
 // Executive: Classic formal, centered header, thick rules, serif body
 const ExecutiveTemplate = memo(function ExecutiveTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 14 }}>
+    <section data-section={id} style={{ marginBottom: sp(14) }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, margin:'0 0 8px' }}>
         <div style={{ flex:1, height:1.5, background:'#1A1A1A' }}/>
-        <h2 style={{
+        <h2 data-section-title style={{
           fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase',
           fontWeight:700, color:'#1A1A1A', margin:0, fontFamily:'var(--cv-body)',
           whiteSpace:'nowrap',
@@ -28,7 +28,7 @@ const ExecutiveTemplate = memo(function ExecutiveTemplate({ data, accent, lang, 
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ textAlign:'center', marginBottom:20, paddingBottom:14 }}>
+      <header key="personal" data-section="personal" style={{ textAlign:'center', marginBottom: sp(20), paddingBottom:14 }}>
         {showPhoto && (
           <div style={{ display:'flex', justifyContent:'center', marginBottom:10 }}>
             <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={70} accent={accent}/>
@@ -215,7 +215,7 @@ const ExecutiveTemplate = memo(function ExecutiveTemplate({ data, accent, lang, 
   };
 
   return (
-    <div style={{ padding:'14mm 18mm', fontFamily:'var(--cv-body)', color:'#1A1A1A', direction:isRtl?'rtl':'ltr' }}>
+    <div style={{ padding:margin('14mm 18mm'), fontFamily:'var(--cv-body)', color:'#1A1A1A', fontSize:11, direction:isRtl?'rtl':'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.())}
     </div>
   );

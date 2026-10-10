@@ -1,5 +1,5 @@
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import Icon from '../components/Icon.jsx';
@@ -9,7 +9,7 @@ const SIDEBAR_SECTIONS = new Set(['skills', 'languages', 'certifications', 'hobb
 
 export default function SidebarTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const visible = visibleIds(sections);
@@ -21,7 +21,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
   const sidebarMuted = 'rgba(255,255,255,0.7)';
 
   const SideHeading = ({ children }) => (
-    <h3 style={{
+    <h3 data-section-title style={{
       fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
       fontWeight: 600, color: 'rgba(255,255,255,0.85)',
       margin: '0 0 10px', paddingBottom: 6,
@@ -30,7 +30,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
   );
 
   const MainHeading = ({ children }) => (
-    <h2 style={{
+    <h2 data-section-title style={{
       fontFamily: 'var(--cv-heading)', fontSize: 18, fontWeight: 500,
       color: '#1A1A1A', margin: '0 0 12px', letterSpacing: '-0.01em',
     }}>{children}</h2>
@@ -40,7 +40,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
     switch (id) {
       case 'skills':
         return (
-          <section key="skills" data-section="skills" style={{ marginBottom: 22 }}>
+          <section key="skills" data-section="skills" style={{ marginBottom: sp(22) }}>
             <SideHeading>{t.sections.skills}</SideHeading>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(data.skills || []).map((sk, i) => (
@@ -58,7 +58,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'languages':
         return (
-          <section key="languages" data-section="languages" style={{ marginBottom: 22 }}>
+          <section key="languages" data-section="languages" style={{ marginBottom: sp(22) }}>
             <SideHeading>{t.sections.languages}</SideHeading>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {(data.languages || []).map((l, i) => (
@@ -84,7 +84,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'certifications':
         return (
-          <section key="certifications" data-section="certifications" style={{ marginBottom: 22 }}>
+          <section key="certifications" data-section="certifications" style={{ marginBottom: sp(22) }}>
             <SideHeading>{t.sections.certifications}</SideHeading>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {(data.certifications || []).map((c, i) => (
@@ -101,7 +101,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
       case 'links': {
         const links = data.personal?.links || [];
         return (
-          <section key="links" data-section="links" style={{ marginBottom: 22 }}>
+          <section key="links" data-section="links" style={{ marginBottom: sp(22) }}>
             <SideHeading>{t.sections.links}</SideHeading>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {links.map((l, i) => (
@@ -116,7 +116,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
       }
       case 'hobbies':
         return (
-          <section key="hobbies" data-section="hobbies" style={{ marginBottom: 22 }}>
+          <section key="hobbies" data-section="hobbies" style={{ marginBottom: sp(22) }}>
             <SideHeading>{t.sections.hobbies}</SideHeading>
             <Editable {...F(['hobbies'], { multiline: true, ai: true })} as="div"
               style={{ fontSize: 10.5, color: sidebarTextColor, lineHeight: 1.55 }}/>
@@ -130,7 +130,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
     switch (id) {
       case 'summary':
         return (
-          <section key="summary" data-section="summary" style={{ marginBottom: 22 }}>
+          <section key="summary" data-section="summary" style={{ marginBottom: sp(22) }}>
             <MainHeading>{t.sections.summary}</MainHeading>
             <Editable {...F(['summary'], { multiline: true, placeholder: t.labels.summaryPlaceholder, ai: true })} as="p"
               style={{ margin: 0, fontSize: 11.5, lineHeight: 1.65, color: '#2A2A2A', textWrap: 'pretty' }}/>
@@ -138,7 +138,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'experience':
         return (
-          <section key="experience" data-section="experience" style={{ marginBottom: 22 }}>
+          <section key="experience" data-section="experience" style={{ marginBottom: sp(22) }}>
             <MainHeading>{t.sections.experience}</MainHeading>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {(data.experience || []).map((j, i) => (
@@ -171,7 +171,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'education':
         return (
-          <section key="education" data-section="education" style={{ marginBottom: 22 }}>
+          <section key="education" data-section="education" style={{ marginBottom: sp(22) }}>
             <MainHeading>{t.sections.education}</MainHeading>
             {(data.education || []).map((e, i) => (
               <div key={i} style={{ marginBottom: 8 }}>
@@ -189,7 +189,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'projects':
         return (
-          <section key="projects" data-section="projects" style={{ marginBottom: 22 }}>
+          <section key="projects" data-section="projects" style={{ marginBottom: sp(22) }}>
             <MainHeading>{t.sections.projects}</MainHeading>
             {(data.projects || []).map((p, i) => (
               <div key={i} style={{ marginBottom: 10 }}>
@@ -205,7 +205,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'awards':
         return (
-          <section key="awards" data-section="awards" style={{ marginBottom: 22 }}>
+          <section key="awards" data-section="awards" style={{ marginBottom: sp(22) }}>
             <MainHeading>{t.sections.awards}</MainHeading>
             {(data.awards || []).map((a, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 5 }}>
@@ -221,14 +221,14 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'volunteering':
         return (
-          <section key="volunteering" data-section="volunteering" style={{ marginBottom: 22 }}>
+          <section key="volunteering" data-section="volunteering" style={{ marginBottom: sp(22) }}>
             <MainHeading>{t.sections.volunteering}</MainHeading>
             {(data.volunteering || []).map((v, i) => (
               <div key={i} style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
                   <div>
                     <Editable value={v.role} onChange={(vv) => onEdit(['volunteering', i, 'role'], vv)} style={{ fontFamily: 'var(--cv-heading)', fontSize: 13, fontWeight: 500 }}/>
-                    <span style={{ color: '#bbb', margin: '0 5px' }}>at</span>
+                    <span style={{ color: '#bbb', margin: '0 5px' }}>{isRtl ? '·' : 'at'}</span>
                     <Editable value={v.org} onChange={(vv) => onEdit(['volunteering', i, 'org'], vv)} style={{ fontSize: 12, color: accent }}/>
                   </div>
                   <span style={{ fontSize: 10, color: '#888' }}>{formatRange(v.start, v.end, lang)}</span>
@@ -241,7 +241,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         );
       case 'publications':
         return (
-          <section key="publications" data-section="publications" style={{ marginBottom: 22 }}>
+          <section key="publications" data-section="publications" style={{ marginBottom: sp(22) }}>
             <MainHeading>{t.sections.publications}</MainHeading>
             {(data.publications || []).map((p, i) => (
               <div key={i} style={{ fontSize: 11.5, marginBottom: 5 }}>
@@ -265,13 +265,14 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
       display: 'flex',
       flexDirection: isRtl ? 'row-reverse' : 'row',
       width: '100%',
-      minHeight: '297mm',
+      minHeight: 'var(--page-h, 297mm)', // reach the page's bottom edge at any fit
       fontFamily: 'var(--cv-body)',
+      fontSize: 11,
       direction: isRtl ? 'rtl' : 'ltr',
     }}>
-      <aside style={{ width: '36%', background: sidebarBg, color: 'white', padding: '16mm 14mm' }}>
+      <aside style={{ width: '36%', background: sidebarBg, color: 'white', padding: margin('16mm 14mm') }}>
         {showPersonal && (
-          <div style={{ marginBottom: 24, textAlign: isRtl ? 'right' : 'left' }}>
+          <div data-section="personal" style={{ marginBottom: sp(24), textAlign: isRtl ? 'right' : 'left' }}>
             {showPhoto && (
               <div style={{ marginBottom: 14, display: 'flex', justifyContent: isRtl ? 'flex-end' : 'flex-start' }}>
                 <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal', 'photo'], v)} size={92} accent="white"/>
@@ -296,7 +297,7 @@ export default function SidebarTemplate({ data, accent, lang, sections, showPhot
         )}
         {sidebarSections.map(id => renderSidebarSection(id))}
       </aside>
-      <main style={{ flex: 1, padding: '16mm 14mm', color: '#1A1A1A', background: 'white' }}>
+      <main style={{ flex: 1, padding: margin('16mm 14mm'), color: '#1A1A1A', background: 'white' }}>
         {mainSections.map(id => renderMainSection(id))}
       </main>
     </div>

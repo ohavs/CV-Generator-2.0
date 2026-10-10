@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { I18N } from '../data.js';
+import { labelsFor } from '../templates/helpers.js';
 import Icon from './Icon.jsx';
 
 /* ---------------------------------------------------------------------------
@@ -149,8 +149,8 @@ function Dots({ label, value, onChange }) {
 
 export default function FullEditor({ open, state, editField, toggleSection, onClose }) {
   const lang = state.language;
-  const t = I18N[lang];
   const data = state.data[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
   const scrollRef = useRef(null);
   const scrollTop = useRef(0);

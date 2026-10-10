@@ -1,8 +1,11 @@
 import { useRef } from 'react';
 import Editable, { useIsMobile } from '../components/Editable.jsx';
+import { useDesign } from '../components/designContext.js';
 
-export default function EditableBullets({ bullets, onChange, accent, lang, placeholder, bulletStyle = 'dot' }) {
+export default function EditableBullets({ bullets, onChange, accent, lang, placeholder, bulletStyle: templateStyle = 'dot' }) {
   const isMobile = useIsMobile();
+  const { bulletStyle: chosen } = useDesign();
+  const bulletStyle = chosen && chosen !== 'auto' ? chosen : templateStyle;
   const listRef = useRef(null);
   const del = (idx) => {
     if (bullets.length === 1) return onChange(['']);

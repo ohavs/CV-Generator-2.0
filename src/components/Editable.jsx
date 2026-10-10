@@ -5,6 +5,21 @@ const mq = typeof window !== 'undefined' ? window.matchMedia('(max-width: 900px)
 const subscribeMq = (cb) => { mq?.addEventListener('change', cb); return () => mq?.removeEventListener('change', cb); };
 export const useIsMobile = () => useSyncExternalStore(subscribeMq, () => !!mq?.matches, () => false);
 
+// A field written entirely in one script is isolated in that direction, so an
+// e-mail, phone number or English company name inside a Hebrew CV keeps its
+// own order ("+972 52-123-4567", not "52-123-4567 972+") and its trailing
+// punctuation stays where it belongs. Mixed lines follow the page.
+const RTL_CHARS = /[\u0590-\u05FF\u0600-\u06FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
+const LTR_CHARS = /[A-Za-z\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF]/;
+export function textDir(v) {
+  if (!v) return undefined;
+  const rtl = RTL_CHARS.test(v), ltr = LTR_CHARS.test(v);
+  if (rtl && !ltr) return 'rtl';
+  if (ltr && !rtl) return 'ltr';
+  if (!rtl && !ltr && /[0-9@+]/.test(v)) return 'ltr';
+  return undefined;
+}
+
 export default function Editable({
   value, onChange, multiline = false, placeholder = '',
   className = '', as = 'span', style, onFocus, onBlur,
@@ -84,6 +99,7 @@ export default function Editable({
       data-placeholder={placeholder}
       data-empty={isEmpty ? 'true' : 'false'}
       data-editable
+      dir={textDir(value)}
       onClick={isMobile ? openMobileEditor : undefined}
       onBlur={isMobile ? undefined : (e) => { commit(); onBlur?.(e); }}
       onFocus={isMobile ? undefined : onFocus}

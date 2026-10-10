@@ -23,3 +23,20 @@ The design medium is **HTML/CSS/JS** — these are prototypes, not production co
 - `README.md` — this file
 - `chats/` — conversation transcripts (read these!)
 - `project/` — the `CV-Generator` project files (HTML prototypes, assets, components)
+
+## Layout check
+
+Every template must survive any content and any design setting without text
+colliding, leaving the page, or the PDF differing from the screen. To verify:
+
+```bash
+npx playwright install chromium   # once
+npm run check:layout -- --export  # full matrix; --only=charter for one template
+```
+
+It renders each template in Hebrew and English with realistic, long, overflowing
+and near-empty content, at the extremes of every design control (text size,
+per-section size, spacing, fonts, custom titles), and fails on overlapping text,
+clipped or spilling text, unintended font sizes, or PDF drift. Screenshots of
+failures land in `layout-report/`. When adding a design control, add its
+extremes to `scripts/layout-settings.mjs`.

@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
+import { DesignContext } from '../components/designContext.js';
 
 // One loader per template. Each uses a *literal* import string so Vite can
 // statically rewrite it to the correct hashed chunk in production.
@@ -35,12 +36,37 @@ if (typeof requestIdleCallback !== 'undefined') {
 
 const PageBlank = <div style={{ width: '100%', height: '100%', background: 'white' }}/>;
 
-export function TemplateRoot(props) {
+// Text size is applied by zooming whole sections: everything inside a
+// section — text, gaps, the date column — grows together, so a template's
+// proportions hold at any size, while page margins and column widths (which
+// live outside the sections) stay put. A section's own size leaves its title
+// alone (counter-zoom), so headings stay consistent down the page; the
+// overall text size scales titles too.
+function sectionZoomCss(sections, textScale = 1, sectionScale = {}) {
+  const rules = [];
+  for (const { id } of sections) {
+    const own = sectionScale?.[id] ?? 1;
+    const zoom = Math.round(textScale * own * 1000) / 1000;
+    if (zoom !== 1) rules.push(`[data-template] [data-section="${id}"]{zoom:${zoom}}`);
+    if (own !== 1) rules.push(`[data-template] [data-section="${id}"] [data-section-title]{zoom:${Math.round(10000 / own) / 10000}}`);
+  }
+  return rules.join('\n');
+}
+
+export function TemplateRoot({ design = {}, ...props }) {
   const Comp = Templates[props.template] || Templates.classic;
+  const { textScale = 1, sectionScale, spacing = 1, bulletStyle = 'auto', photoShape = 'auto' } = design;
+  const css = useMemo(() => sectionZoomCss(props.sections, textScale, sectionScale), [props.sections, textScale, sectionScale]);
+  const ctx = useMemo(() => ({ bulletStyle, photoShape }), [bulletStyle, photoShape]);
   return (
-    <Suspense fallback={PageBlank}>
-      <Comp {...props}/>
-    </Suspense>
+    <DesignContext.Provider value={ctx}>
+      <div data-template={props.template} style={{ '--cv-space': spacing }}>
+        {css && <style>{css}</style>}
+        <Suspense fallback={PageBlank}>
+          <Comp {...props}/>
+        </Suspense>
+      </div>
+    </DesignContext.Provider>
   );
 }
 

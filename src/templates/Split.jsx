@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,7 +8,7 @@ import EditableBullets from './EditableBullets.jsx';
 // Split: True 2-column layout, no sidebar fill — pure structure
 const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const LEFT_SECTIONS = new Set(['skills', 'languages', 'certifications', 'awards', 'hobbies']);
@@ -17,7 +17,7 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
   const rightSections = visible.filter(id => !LEFT_SECTIONS.has(id) && id !== 'personal');
 
   const SectionLabel = ({ title }) => (
-    <h2 style={{
+    <h2 data-section-title style={{
       fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
       fontWeight: 700, color: accent, margin: '0 0 7px',
       fontFamily: 'var(--cv-body)',
@@ -28,7 +28,7 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
     switch (id) {
       case 'skills':
         return (
-          <section key="skills" data-section="skills" style={{ marginBottom: 12 }}>
+          <section key="skills" data-section="skills" style={{ marginBottom: sp(12) }}>
             <SectionLabel title={t.sections.skills}/>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {(data.skills || []).map((sk, i) => (
@@ -44,7 +44,7 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
         );
       case 'languages':
         return (
-          <section key="languages" data-section="languages" style={{ marginBottom: 12 }}>
+          <section key="languages" data-section="languages" style={{ marginBottom: sp(12) }}>
             <SectionLabel title={t.sections.languages}/>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 10.5 }}>
               {(data.languages || []).map((l, i) => (
@@ -58,7 +58,7 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
         );
       case 'certifications':
         return (
-          <section key="certifications" data-section="certifications" style={{ marginBottom: 12 }}>
+          <section key="certifications" data-section="certifications" style={{ marginBottom: sp(12) }}>
             <SectionLabel title={t.sections.certifications}/>
             {(data.certifications || []).map((c, i) => (
               <div key={i} style={{ marginBottom: 6, fontSize: 10.5 }}>
@@ -73,7 +73,7 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
         );
       case 'awards':
         return (
-          <section key="awards" data-section="awards" style={{ marginBottom: 12 }}>
+          <section key="awards" data-section="awards" style={{ marginBottom: sp(12) }}>
             <SectionLabel title={t.sections.awards}/>
             {(data.awards || []).map((a, i) => (
               <div key={i} style={{ marginBottom: 6, fontSize: 10.5 }}>
@@ -90,7 +90,7 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
         );
       case 'hobbies':
         return (
-          <section key="hobbies" data-section="hobbies" style={{ marginBottom: 12 }}>
+          <section key="hobbies" data-section="hobbies" style={{ marginBottom: sp(12) }}>
             <SectionLabel title={t.sections.hobbies}/>
             <Editable {...F(['hobbies'], { multiline: true, ai: true })} as="div"
               style={{ fontSize: 10.5, color: '#555', lineHeight: 1.55 }}/>
@@ -101,8 +101,8 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
   };
 
   const RightSection = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 12 }}>
-      <h2 style={{
+    <section data-section={id} style={{ marginBottom: sp(12) }}>
+      <h2 data-section-title style={{
         fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
         fontWeight: 700, color: accent, margin: '0 0 7px',
         fontFamily: 'var(--cv-body)',
@@ -233,9 +233,9 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
   };
 
   return (
-    <div style={{ padding: '14mm 16mm', fontFamily: 'var(--cv-body)', color: '#1A1A1A', direction: isRtl ? 'rtl' : 'ltr' }}>
+    <div style={{ padding: margin('14mm 16mm'), fontFamily: 'var(--cv-body)', color: '#1A1A1A', fontSize: 11, direction: isRtl ? 'rtl' : 'ltr' }}>
       {visible.includes('personal') && (
-        <header key="personal" style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1.5px solid #111' }}>
+        <header key="personal" data-section="personal" style={{ marginBottom: sp(14), paddingBottom: 12, borderBottom: '1.5px solid #111' }}>
           <div style={{ display:'flex', alignItems:'center', gap:16 }}>
           {showPhoto && (
             <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={68} accent={accent}/>
@@ -247,7 +247,7 @@ const SplitTemplate = memo(function SplitTemplate({ data, accent, lang, sections
               <Editable as="div" {...F(['personal', 'title'])}
                 style={{ fontSize: 12.5, color: accent, marginTop: 4, fontWeight: 500 }}/>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 10, color: '#555', textAlign: isRtl ? 'left' : 'right', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 10, color: '#555', textAlign: isRtl ? 'left' : 'right', maxWidth: '48%' }}>
               <Editable {...F(['personal', 'email'])}/>
               <Editable {...F(['personal', 'phone'])}/>
               <Editable {...F(['personal', 'location'])}/>
