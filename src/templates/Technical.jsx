@@ -22,9 +22,9 @@ export default function TechnicalTemplate({ data, accent, lang, sections, showPh
         fontFamily: monoFont, color: inkColor,
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
-        <span style={{ color: accent, fontWeight: 700 }}>##</span>
+        <span data-deco style={{ color: accent, fontWeight: 700 }}>##</span>
         <span style={{ letterSpacing: '0.04em' }}>{title.toLowerCase().replace(/\s/g, '_')}</span>
-        <span style={{ flex: 1, height: 1, background: '#E5E0D8' }}/>
+        <span data-deco style={{ flex: 1, height: 1, background: '#E5E0D8' }}/>
       </h2>
       {children}
     </section>
@@ -38,7 +38,7 @@ export default function TechnicalTemplate({ data, accent, lang, sections, showPh
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={66} round={false} accent={accent}/>
         )}
         <div style={{ flex:1 }}>
-        <div style={{ fontSize: 10, color: dimColor, marginBottom: 6, fontFamily: monoFont }}>
+        <div data-deco style={{ fontSize: 10, color: dimColor, marginBottom: 6, fontFamily: monoFont }}>
           {isRtl ? '// קובץ קורות חיים · v2.0' : '// cv.profile · v2.0'}
         </div>
         <Editable as="h1" {...F(['personal', 'name'])}

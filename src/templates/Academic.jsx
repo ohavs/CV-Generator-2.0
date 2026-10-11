@@ -22,7 +22,7 @@ export default function AcademicTemplate({ data, accent, lang, sections, showPho
           paddingBottom: 4, borderBottom: '1px solid #1A1A1A',
           letterSpacing: '0.01em',
         }}>
-          <span style={{ color: accent, marginInlineEnd: 8 }}>{String(secNum).padStart(2, '0')}</span>
+          <span data-section-num style={{ color: accent, marginInlineEnd: 8 }}>{String(secNum).padStart(2, '0')}</span>
           {title}
         </h2>
         {children}

@@ -123,6 +123,21 @@ input, textarea, select { font-family: inherit; color: inherit; }
 /* A field isolated in its own direction still lines up with its neighbours. */
 .preview-page [data-editable][dir] { text-align: match-parent; }
 
+/* Section numbers ("01", "02"…) and title decorations, switched from the
+   design panel. Numbers come from a counter, so any template can show them;
+   Academic draws its own, which "off" hides. */
+.preview-page [data-template] { counter-reset: cv-sec; }
+.preview-page [data-template] [data-section]:not([data-section="personal"]) { counter-increment: cv-sec; }
+.preview-page [data-numbering="on"]:not([data-template="academic"]) [data-section-title]::before {
+  content: counter(cv-sec, decimal-leading-zero);
+  color: var(--cv-accent, currentColor);
+  font-weight: 700;
+  margin-inline-end: 0.6em;
+}
+.preview-page [data-numbering="off"] [data-section-num] { display: none !important; }
+.preview-page [data-decorations="off"] [data-deco] { display: none !important; }
+.preview-page [data-decorations="off"] [data-section-title] { border-bottom-width: 0 !important; }
+
 /* zoom badge */
 .zoom-badge {
   position: absolute;
@@ -716,6 +731,18 @@ button.section-label-btn:hover svg, button.section-label-btn:focus-visible svg {
   padding: 4px 8px; border-radius: 6px; color: var(--ink);
   border: 1px solid var(--accent); background: var(--surface); outline: none;
 }
+/* per-section text size, listed under the overall size in the design tab */
+.meb-size {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 8px; font-size: 12.5px; color: var(--ink-3);
+}
+.size-list { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 4px; }
+.size-list-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 5px 0; font-size: 13px; color: var(--ink-2);
+}
+.size-list-row > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.section-row .toggle-vis:disabled { opacity: 0.25; cursor: default; }
 .size-stepper {
   display: inline-flex; align-items: center; flex-shrink: 0;
   background: var(--surface-2); border-radius: 8px; padding: 2px;

@@ -13,14 +13,14 @@ const ExecutiveTemplate = memo(function ExecutiveTemplate({ data, accent, lang, 
 
   const Section = ({ id, title, children }) => (
     <section data-section={id} style={{ marginBottom: sp(14) }}>
-      <div style={{ display:'flex', alignItems:'center', gap:10, margin:'0 0 8px' }}>
-        <div style={{ flex:1, height:1.5, background:'#1A1A1A' }}/>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, margin:'0 0 8px' }}>
+        <div data-deco style={{ flex:1, height:1.5, background:'#1A1A1A' }}/>
         <h2 data-section-title style={{
           fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase',
           fontWeight:700, color:'#1A1A1A', margin:0, fontFamily:'var(--cv-body)',
           whiteSpace:'nowrap',
         }}>{title}</h2>
-        <div style={{ flex:1, height:1.5, background:'#1A1A1A' }}/>
+        <div data-deco style={{ flex:1, height:1.5, background:'#1A1A1A' }}/>
       </div>
       {children}
     </section>

@@ -564,6 +564,8 @@ export const LIMITS = {
 
 export const BULLET_STYLES = ['auto', 'dot', 'dash', 'arrow', 'square', 'none'];
 export const PHOTO_SHAPES = ['auto', 'round', 'square'];
+export const NUMBERING = ['auto', 'on', 'off'];   // section numbers: template's choice / always / never
+export const DECORATIONS = ['auto', 'off'];      // title rules, bars and marks: template's / none
 
 export const clampTo = (v, { min, max }) => Math.min(max, Math.max(min, v));
 
@@ -579,6 +581,8 @@ export const DEFAULT_STATE = {
   sectionSpacing: 1,
   bulletStyle: 'auto', // 'auto' = whatever the template draws
   photoShape: 'auto',
+  sectionNumbers: 'auto',
+  decorations: 'auto',
   darkEdit: false,
   showPhoto: true,
   sections: DEFAULT_SECTIONS,

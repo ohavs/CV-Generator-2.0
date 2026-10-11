@@ -36,7 +36,7 @@ const COMBOS = [
   ['demo', 'max-text'], ['stress', 'max-text'], ['sparse', 'long-titles'],
 ];
 // The PDF is compared with the screen for these (it's the slow part).
-const EXPORT_COMBOS = new Set(['long/default', 'long/mixed', 'long/max-text']);
+const EXPORT_COMBOS = new Set(['long/default', 'long/mixed', 'long/max-text', 'long/display']);
 
 function buildState(template, lang, variant, setting) {
   const { data, sections } = VARIANTS[variant](lang);

@@ -1,5 +1,7 @@
 import { memo, useState, startTransition } from 'react';
-import { TEMPLATES, ACCENT_PALETTE, FONT_PRESETS, LIMITS, BULLET_STYLES, PHOTO_SHAPES, resolveFonts } from '../data.js';
+import { TEMPLATES, ACCENT_PALETTE, FONT_PRESETS, LIMITS, BULLET_STYLES, PHOTO_SHAPES, NUMBERING, DECORATIONS, resolveFonts } from '../data.js';
+import { labelsFor } from '../templates/helpers.js';
+import SizeStepper, { withSectionScale } from '../components/SizeStepper.jsx';
 import { TemplateThumb } from '../templates/index.jsx';
 import Icon from '../components/Icon.jsx';
 import FitNote from './FitNote.jsx';
@@ -56,6 +58,7 @@ function DesignTab({ state, setState, t, fitScale = 1 }) {
   const set = (patch) => startTransition(() => update(patch));
   const preset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
   const fonts = resolveFonts(state);
+  const sectionNames = labelsFor(lang, state.data[lang]).sections;
 
   return (
     <>
@@ -166,13 +169,23 @@ function DesignTab({ state, setState, t, fitScale = 1 }) {
             onChange={(v) => update({ fontScale: v })}
           />
           <div className="panel-hint">
-            {he
-              ? 'כל המסמך. לגודל של מקטע אחד — בלשונית "מקטעים".'
-              : 'The whole CV. For one section, use the Sections tab.'}
+            {he ? 'כל המסמך. מתחת: כל מקטע בנפרד.' : 'The whole CV. Below: each section on its own.'}
           </div>
           {fitScale < 0.995 && (
             <FitNote fitScale={fitScale} he={he}/>
           )}
+          <div className="size-list">
+            {state.sections.filter(s => s.visible).map(s => (
+              <div key={s.id} className="size-list-row">
+                <span>{sectionNames[s.id]}</span>
+                <SizeStepper
+                  value={state.sectionScale?.[s.id] ?? 1}
+                  onChange={(v) => setState(st => withSectionScale(st, s.id, v))}
+                  lang={lang}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -225,6 +238,33 @@ function DesignTab({ state, setState, t, fitScale = 1 }) {
         </div>
       </div>
 
+      {/* Template furniture: section numbers, title rules and marks */}
+      <div className="panel-group">
+        <h3 className="panel-title">{he ? 'תצוגה' : 'Display'}</h3>
+        <div className="panel-card">
+          <div className="field-row">
+            <label>{he ? 'מספור מקטעים' : 'Section numbers'}</label>
+            <SegToggle
+              value={state.sectionNumbers || 'auto'}
+              onChange={(id) => set({ sectionNumbers: id })}
+              items={NUMBERING.map(id => [id, {
+                auto: he ? 'לפי התבנית' : 'Template',
+                on: he ? 'עם מספרים' : 'Numbered',
+                off: he ? 'בלי' : 'None',
+              }[id]])}
+            />
+          </div>
+          <div className="field-row">
+            <label>{he ? 'קווים וקישוטים' : 'Rules & marks'}</label>
+            <SegToggle
+              value={state.decorations || 'auto'}
+              onChange={(id) => set({ decorations: id })}
+              items={DECORATIONS.map(id => [id, { auto: he ? 'לפי התבנית' : 'Template', off: he ? 'בלי' : 'None' }[id]])}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Language + Dark mode */}
       <div className="panel-group">
         <h3 className="panel-title">{t.labels.language}</h3>
@@ -255,10 +295,13 @@ function DesignTab({ state, setState, t, fitScale = 1 }) {
 
 // Only re-render DesignTab when design-related state changes — never when CV data changes
 const DESIGN_KEYS = ['template', 'accent', 'fontPreset', 'headingFont', 'bodyFont', 'fontScale', 'sectionSpacing',
+  'sectionScale', 'sectionNumbers', 'decorations',
   'bulletStyle', 'photoShape', 'showPhoto', 'darkEdit', 'language', 'sections'];
 export default memo(DesignTab, (prev, next) =>
   DESIGN_KEYS.every(k => prev.state[k] === next.state[k]) &&
   prev.fitScale === next.fitScale &&
   prev.setState === next.setState &&
-  prev.t === next.t
+  prev.t === next.t &&
+  // renamed sections show by their new name in the size list
+  prev.state.data[prev.state.language]?.sectionTitles === next.state.data[next.state.language]?.sectionTitles
 );

@@ -13,7 +13,7 @@ const StripeTemplate = memo(function StripeTemplate({ data, accent, lang, sectio
 
   const Section = ({ id, title, children }) => (
     <section data-section={id} style={{ marginBottom: sp(16), display:'flex', gap:16 }}>
-      <div style={{ width:3, background:accent, borderRadius:2, flexShrink:0, marginTop:2 }}/>
+      <div data-deco style={{ width:3, background:accent, borderRadius:2, flexShrink:0, marginTop:2 }}/>
       <div style={{ flex:1 }}>
         <h2 data-section-title style={{
           fontSize:10.5, letterSpacing:'0.16em', textTransform:'uppercase',

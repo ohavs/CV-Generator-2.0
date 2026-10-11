@@ -37,11 +37,11 @@ export default function ContentTab({ state, setState, t: uiT, onAddJump }) {
       return;
     }
     if (key === 'links') {
+      // Only in the language being edited: a blank copy in the other one
+      // would sit there unseen, then surface as an empty row on switching.
       const next = { ...state.data };
-      const otherLang = lang === 'he' ? 'en' : 'he';
       const newLink = { label: 'Link', url: '', icon: 'globe' };
       next[lang] = { ...next[lang], personal: { ...next[lang].personal, links: [...(next[lang].personal.links || []), newLink] } };
-      next[otherLang] = { ...next[otherLang], personal: { ...next[otherLang].personal, links: [...(next[otherLang].personal.links || []), newLink] } };
       setState({ ...state, data: next });
       onAddJump?.(key);
       return;
@@ -49,11 +49,27 @@ export default function ContentTab({ state, setState, t: uiT, onAddJump }) {
     const blank = blanks[key];
     if (!blank) return;
     const next = { ...state.data };
-    const otherLang = lang === 'he' ? 'en' : 'he';
     next[lang] = { ...next[lang], [key]: [...(next[lang][key] || []), blank] };
-    next[otherLang] = { ...next[otherLang], [key]: [...(next[otherLang][key] || []), blank] };
     setState({ ...state, data: next });
     onAddJump?.(key);
+  };
+
+  // − removes an item only while it's empty: a row added by mistake, or one
+  // left blank. Filled items are never removed from here.
+  const removeEmpty = (key) => {
+    const next = { ...state.data };
+    if (key === 'links') {
+      const links = data.personal?.links || [];
+      const idx = links.findLastIndex(linkEmpty);
+      if (idx < 0) return;
+      next[lang] = { ...data, personal: { ...data.personal, links: links.filter((_, i) => i !== idx) } };
+    } else {
+      const list = data[key] || [];
+      const idx = list.findLastIndex(e => entryEmpty(e, key));
+      if (idx < 0) return;
+      next[lang] = { ...data, [key]: list.filter((_, i) => i !== idx) };
+    }
+    setState({ ...state, data: next });
   };
 
   const arr = (k) => (data[k] || []).length;
@@ -65,6 +81,15 @@ export default function ContentTab({ state, setState, t: uiT, onAddJump }) {
       <div className="section-row" style={{ cursor: 'default', flexWrap: 'wrap' }}>
         <span className="section-label">{label}</span>
         <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>{count}</span>
+        <button
+          className="toggle-vis"
+          disabled={!hasEmpty(id)}
+          onClick={() => removeEmpty(id)}
+          title={lang === 'he' ? 'הסרת פריט ריק' : 'Remove an empty item'}
+          aria-label={lang === 'he' ? 'הסרת פריט ריק' : 'Remove an empty item'}
+        >
+          <Icon name="minus" size={14}/>
+        </button>
         <button
           className="toggle-vis"
           data-blocked={blocked || undefined}
@@ -97,8 +122,8 @@ export default function ContentTab({ state, setState, t: uiT, onAddJump }) {
         </div>
         <div style={{ fontSize: 11.5, color: 'var(--ink-4)', marginTop: 8, lineHeight: 1.5 }}>
           {lang === 'he'
-            ? 'לחיצה על + מוסיפה פריט וקופצת אליו בתצוגה למילוי מיידי.'
-            : 'Tapping + adds an item and jumps to it in the preview.'}
+            ? '+ מוסיף פריט וקופץ אליו בתצוגה. − מסיר פריט ריק (פריט מלא לא יימחק מכאן).'
+            : '+ adds an item and jumps to it in the preview. − removes an empty one (filled items are never removed here).'}
         </div>
       </div>
 

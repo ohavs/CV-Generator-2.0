@@ -19,7 +19,7 @@ const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sect
           fontWeight: 700, color: accent, margin: 0,
           fontFamily: 'var(--cv-body)', whiteSpace: 'nowrap',
         }}>{title}</h2>
-        <div style={{ flex: 1, height: '0.5px', background: '#D0CCC4' }}/>
+        <div data-deco style={{ flex: 1, height: '0.5px', background: '#D0CCC4' }}/>
       </div>
       {children}
     </section>

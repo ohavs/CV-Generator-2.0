@@ -46,5 +46,9 @@ export const SETTINGS = {
   showcase: (s) => ({ ...s, sectionScale: { experience: 1.2, skills: 0.85, summary: 1.1 }, sectionSpacing: 1.3,
     headingFont: 'galil', bulletStyle: 'arrow', photoShape: 'square',
     data: { ...s.data, [s.language]: { ...s.data[s.language], sectionTitles: { experience: 'ניסיון מקצועי' } } } }),
+  // Numbers on every template (with their counter-generated prefix) and all
+  // title rules, bars and marks removed.
+  display: (s) => ({ ...s, sectionNumbers: 'on', decorations: 'off', sectionScale: alternate() }),
+  'numbers-off': (s) => ({ ...s, sectionNumbers: 'off', data: longTitles(s) }),
   'long-titles': (s) => ({ ...s, data: longTitles(s), bulletStyle: 'none', fontScale: LIMITS.textScale.max }),
 };
