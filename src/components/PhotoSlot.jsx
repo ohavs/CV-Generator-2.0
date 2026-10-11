@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import Icon from './Icon.jsx';
+import { useDesign } from './designContext.js';
 
 // Downscale + re-encode so we never stuff a multi-MB data URL into
 // localStorage (which now holds several CVs). Longest edge is capped and the
@@ -30,8 +31,10 @@ async function compress(file) {
 
 // A photo well usable by every template. `size` + `round` shape it; the empty
 // state shows a dashed upload affordance that is hidden from the exported PDF.
-export default function PhotoSlot({ value, onChange, size = 100, round = true, accent = '#A8542C' }) {
+export default function PhotoSlot({ value, onChange, size = 100, round: templateRound = true, accent = '#A8542C' }) {
   const inputRef = useRef(null);
+  const { photoShape } = useDesign();
+  const round = photoShape === 'round' ? true : photoShape === 'square' ? false : templateRound;
   const [busy, setBusy] = useState(false);
 
   const pick = async (e) => {

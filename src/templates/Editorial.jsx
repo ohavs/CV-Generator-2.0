@@ -1,5 +1,5 @@
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import Icon from '../components/Icon.jsx';
@@ -7,14 +7,14 @@ import EditableBullets from './EditableBullets.jsx';
 
 export default function EditorialTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
   const visible = visibleIds(sections);
 
   const Section = ({ id, title, children, span = 1 }) => (
-    <section data-section={id} style={{ marginBottom: 16, breakInside: 'avoid', gridColumn: span === 2 ? '1 / -1' : 'auto' }}>
+    <section data-section={id} style={{ marginBottom: sp(16), breakInside: 'avoid', columnSpan: span === 2 ? 'all' : 'none' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-        <h2 style={{
+        <h2 data-section-title style={{
           fontFamily: 'var(--cv-heading)', fontSize: 11, fontWeight: 600,
           margin: 0, color: accent, textTransform: 'uppercase', letterSpacing: '0.18em',
         }}>{title}</h2>
@@ -25,7 +25,7 @@ export default function EditorialTemplate({ data, accent, lang, sections, showPh
   );
 
   const renderPersonal = () => (
-    <header key="personal" style={{ marginBottom: 22, paddingBottom: 18, borderBottom: '0.5px solid #1A1A1A' }}>
+    <header key="personal" data-section="personal" style={{ marginBottom: sp(22), paddingBottom: 18, borderBottom: '0.5px solid #1A1A1A' }}>
       <div style={{ display:'flex', alignItems:'center', gap:16 }}>
         {showPhoto && (
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={72} accent={accent}/>
@@ -63,7 +63,7 @@ export default function EditorialTemplate({ data, accent, lang, sections, showPh
     <Section key="experience" id="experience" title={t.sections.experience} span={2}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {(data.experience || []).map((j, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 16 }}>
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(110px, min-content) 1fr', gap: 16 }}>
             <div>
               <div style={{ fontFamily: 'var(--cv-body)', fontSize: 9.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: accent, fontWeight: 600 }}>
                 {formatRange(j.start, j.end, lang)}
@@ -209,7 +209,7 @@ export default function EditorialTemplate({ data, accent, lang, sections, showPh
     <Section key="volunteering" id="volunteering" title={t.sections.volunteering} span={2}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {(data.volunteering || []).map((v, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 16 }}>
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(110px, min-content) 1fr', gap: 16 }}>
             <div style={{ fontFamily: 'var(--cv-body)', fontSize: 9.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: accent, fontWeight: 600 }}>
               {formatRange(v.start, v.end, lang)}
             </div>
@@ -254,7 +254,7 @@ export default function EditorialTemplate({ data, accent, lang, sections, showPh
   const bodyVisible = visible.filter(id => id !== 'personal');
 
   return (
-    <div style={{ padding: '14mm 18mm', fontFamily: 'var(--cv-body)', color: '#1A1A1A', direction: isRtl ? 'rtl' : 'ltr', background: 'white' }}>
+    <div style={{ padding: margin('14mm 18mm'), fontFamily: 'var(--cv-body)', color: '#1A1A1A', fontSize: 11, direction: isRtl ? 'rtl' : 'ltr', background: 'white' }}>
       {personalNode}
       <div style={{ columnCount: 2, columnGap: '20px', display: 'block' }}>
         {bodyVisible.map(id => renderMap[id] ? renderMap[id]() : null)}

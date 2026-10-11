@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin, mm } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,14 +8,14 @@ import EditableBullets from './EditableBullets.jsx';
 // Bold: High-impact display — strong accent band header, oversized name, confident typography
 const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 15 }}>
+    <section data-section={id} style={{ marginBottom: sp(15) }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:9 }}>
         <div style={{ width:22, height:3, background:accent, borderRadius:2, flexShrink:0 }}/>
-        <h2 style={{
+        <h2 data-section-title style={{
           fontSize:9.5, letterSpacing:'0.22em', textTransform:'uppercase',
           fontWeight:800, color:'#1A1A1A', margin:0, fontFamily:'var(--cv-body)',
         }}>{title}</h2>
@@ -26,7 +26,10 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom:20, background:accent, margin:'-14mm -16mm 20px', padding:'18px 16mm 16px', color:'#fff' }}>
+      // The colour band bleeds to the page edges; the header inside it is what
+      // scales with text size, so the bleed itself never moves.
+      <div key="personal" style={{ background:accent, margin:`${mm(-14)} ${mm(-16)} ${sp(20)}`, padding:`18px ${mm(16)} 16px`, color:'#fff' }}>
+      <header data-section="personal">
         <div style={{ display:'flex', alignItems:'center', gap:16 }}>
         {showPhoto && (
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={72} accent="white"/>
@@ -47,6 +50,7 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
         </div>
         </div>
       </header>
+      </div>
     ),
     summary: () => (
       <Section key="summary" id="summary" title={t.sections.summary}>
@@ -58,12 +62,12 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
       <Section key="experience" id="experience" title={t.sections.experience}>
         <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
           {(data.experience||[]).map((j,i) => (
-            <div key={i} style={{ paddingLeft:10, borderLeft:`2px solid #E8E3DC` }}>
+            <div key={i} style={{ paddingInlineStart:10, borderInlineStart:`2px solid #E8E3DC` }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8, marginBottom:2 }}>
                 <div style={{ display:'flex', gap:6, alignItems:'baseline', flexWrap:'wrap' }}>
                   <Editable value={j.role} onChange={(v)=>onEdit(['experience',i,'role'],v)}
                     style={{ fontSize:13, fontWeight:800, color:'#111', fontFamily:'var(--cv-body)' }}/>
-                  <span style={{ color:'#ccc', fontSize:11 }}>at</span>
+                  <span style={{ color:'#ccc', fontSize:11 }}>{isRtl ? '·' : 'at'}</span>
                   <Editable value={j.company} onChange={(v)=>onEdit(['experience',i,'company'],v)}
                     style={{ fontSize:12.5, color:accent, fontWeight:600, fontFamily:'var(--cv-heading)' }}/>
                 </div>
@@ -178,7 +182,7 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8, marginBottom:2 }}>
               <div>
                 <Editable value={v.role} onChange={(vv)=>onEdit(['volunteering',i,'role'],vv)} style={{ fontSize:12.5, fontWeight:800 }}/>
-                <span style={{ color:'#ccc', fontSize:11, margin:'0 5px' }}>at</span>
+                <span style={{ color:'#ccc', fontSize:11, margin:'0 5px' }}>{isRtl ? '·' : 'at'}</span>
                 <Editable value={v.org} onChange={(vv)=>onEdit(['volunteering',i,'org'],vv)} style={{ fontSize:12, color:accent, fontWeight:600 }}/>
               </div>
               <span style={{ fontSize:10, color:'#888', whiteSpace:'nowrap', fontWeight:600 }}>{formatRange(v.start,v.end,lang)}</span>
@@ -206,7 +210,7 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
   };
 
   return (
-    <div style={{ padding:'14mm 16mm', fontFamily:'var(--cv-body)', color:'#1A1A1A', direction:isRtl?'rtl':'ltr' }}>
+    <div style={{ padding:margin('14mm 16mm'), fontFamily:'var(--cv-body)', color:'#1A1A1A', fontSize:11.5, direction:isRtl?'rtl':'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.())}
     </div>
   );

@@ -552,17 +552,49 @@ export const DEMO_DATA = {
   },
 };
 
+// Ranges for every design control. The layout checker
+// (scripts/check-layout.mjs) renders each template at both ends of each one,
+// so anything inside these bounds is known not to break a template.
+export const LIMITS = {
+  textScale:    { min: 0.8,  max: 1.3, step: 0.02 }, // whole CV (fontScale)
+  sectionScale: { min: 0.7,  max: 1.5, step: 0.05 }, // one section's text
+  spacing:      { min: 0.5,  max: 2,   step: 0.1  }, // gap between sections
+  titleLength:  40,                                  // custom section titles
+};
+
+export const BULLET_STYLES = ['auto', 'dot', 'dash', 'arrow', 'square', 'none'];
+export const PHOTO_SHAPES = ['auto', 'round', 'square'];
+
+export const clampTo = (v, { min, max }) => Math.min(max, Math.max(min, v));
+
 export const DEFAULT_STATE = {
   language: 'he',
   template: 'classic',
   accent: ACCENT_PALETTE[0],
   fontPreset: 'newsreader',
+  headingFont: '',     // '' = the preset's heading font
+  bodyFont: '',        // '' = the preset's body font
   fontScale: 1.0,
+  sectionScale: {},    // { [sectionId]: factor } — missing means 1
+  sectionSpacing: 1,
+  bulletStyle: 'auto', // 'auto' = whatever the template draws
+  photoShape: 'auto',
   darkEdit: false,
   showPhoto: true,
   sections: DEFAULT_SECTIONS,
   data: DEMO_DATA,
 };
+
+// Heading and body font stacks for a state: the chosen pairing, unless a
+// heading or body font was picked on its own.
+export function resolveFonts(state) {
+  const preset = FONT_PRESETS.find(f => f.id === state.fontPreset) || FONT_PRESETS[0];
+  const solo = (id) => FONT_PRESETS.find(f => f.id === id)?.heading;
+  return {
+    heading: solo(state.headingFont) || preset.heading,
+    body: solo(state.bodyFont) || preset.body,
+  };
+}
 
 export function formatRange(start, end, lang) {
   const monthsByIdx = lang === 'he'

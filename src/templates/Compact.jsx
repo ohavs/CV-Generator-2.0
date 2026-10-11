@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 import EditableBullets from './EditableBullets.jsx';
@@ -8,13 +8,13 @@ import EditableBullets from './EditableBullets.jsx';
 // Compact: Maximum density for experienced professionals with lots of content
 const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 8 }}>
+    <section data-section={id} style={{ marginBottom: sp(8) }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-        <h2 style={{
+        <h2 data-section-title style={{
           fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
           fontWeight: 700, color: accent, margin: 0,
           fontFamily: 'var(--cv-body)', whiteSpace: 'nowrap',
@@ -27,7 +27,7 @@ const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sect
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom: 10 }}>
+      <header key="personal" data-section="personal" style={{ marginBottom: sp(10) }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
         {showPhoto && (
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={56} accent={accent}/>
@@ -39,7 +39,7 @@ const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sect
             <Editable as="div" {...F(['personal', 'title'])}
               style={{ fontSize: 11, color: accent, marginTop: 2, fontWeight: 500, letterSpacing: '0.02em' }}/>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 9.5, color: '#666', textAlign: isRtl ? 'left' : 'right', flexShrink: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 9.5, color: '#666', textAlign: isRtl ? 'left' : 'right', maxWidth: '60%' }}>
             <div style={{ display: 'flex', gap: 10, justifyContent: isRtl ? 'flex-start' : 'flex-end', flexWrap: 'wrap' }}>
               <Editable {...F(['personal', 'email'])}/>
               <Editable {...F(['personal', 'phone'])}/>
@@ -256,7 +256,7 @@ const CompactTemplate = memo(function CompactTemplate({ data, accent, lang, sect
   };
 
   return (
-    <div style={{ padding: '14mm 16mm', fontFamily: 'var(--cv-body)', color: '#1A1A1A', direction: isRtl ? 'rtl' : 'ltr' }}>
+    <div style={{ padding: margin('14mm 16mm'), fontFamily: 'var(--cv-body)', color: '#1A1A1A', fontSize: 10.5, direction: isRtl ? 'rtl' : 'ltr' }}>
       {visibleIds(sections).map(id => renderMap[id]?.())}
     </div>
   );

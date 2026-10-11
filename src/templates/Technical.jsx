@@ -1,5 +1,5 @@
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 
@@ -8,7 +8,7 @@ const codeBg = '#FAF8F4';
 
 export default function TechnicalTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
   const inkColor = '#1A1A1A';
   const dimColor = '#888';
@@ -16,8 +16,8 @@ export default function TechnicalTemplate({ data, accent, lang, sections, showPh
   const Arrow = () => <span style={{ color: accent }}>›</span>;
 
   const Section = ({ id, title, children }) => (
-    <section data-section={id} style={{ marginBottom: 20 }}>
-      <h2 style={{
+    <section data-section={id} style={{ marginBottom: sp(20) }}>
+      <h2 data-section-title style={{
         margin: '0 0 10px', fontSize: 11, fontWeight: 700,
         fontFamily: monoFont, color: inkColor,
         display: 'flex', alignItems: 'center', gap: 8,
@@ -32,7 +32,7 @@ export default function TechnicalTemplate({ data, accent, lang, sections, showPh
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom: 22, paddingBottom: 14, borderBottom: `2px solid ${accent}` }}>
+      <header key="personal" data-section="personal" style={{ marginBottom: sp(22), paddingBottom: 14, borderBottom: `2px solid ${accent}` }}>
         <div style={{ display:'flex', alignItems:'center', gap:16 }}>
         {showPhoto && (
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={66} round={false} accent={accent}/>
@@ -280,7 +280,7 @@ export default function TechnicalTemplate({ data, accent, lang, sections, showPh
 
   return (
     <div style={{
-      padding: '16mm 16mm',
+      padding: margin('16mm 16mm'),
       fontFamily: monoFont,
       color: inkColor,
       direction: isRtl ? 'rtl' : 'ltr',

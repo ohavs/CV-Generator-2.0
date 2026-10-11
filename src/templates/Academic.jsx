@@ -1,20 +1,22 @@
-import { I18N, formatRange } from '../data.js';
-import { makeField, visibleIds } from './helpers.js';
+import { formatRange } from '../data.js';
+import { makeField, visibleIds, labelsFor, sp, margin } from './helpers.js';
 import Editable from '../components/Editable.jsx';
 import PhotoSlot from '../components/PhotoSlot.jsx';
 
 export default function AcademicTemplate({ data, accent, lang, sections, showPhoto, onEdit }) {
   const F = makeField(data, onEdit);
-  const t = I18N[lang];
+  const t = labelsFor(lang, data);
   const isRtl = lang === 'he';
   const visible = visibleIds(sections);
 
-  let secNum = 0;
+  // Numbered by position, not by render count — counting inside render
+  // skipped numbers whenever a section rendered twice.
+  const numbered = visible.filter(id => id !== 'personal' && id !== 'links');
   const Section = ({ id, title, children }) => {
-    if (id !== 'personal') secNum++;
+    const secNum = numbered.indexOf(id) + 1;
     return (
-      <section data-section={id} style={{ marginBottom: 16 }}>
-        <h2 style={{
+      <section data-section={id} style={{ marginBottom: sp(16) }}>
+        <h2 data-section-title style={{
           fontFamily: 'var(--cv-heading)', fontSize: 13.5, fontWeight: 600,
           margin: '0 0 7px', color: '#1A1A1A',
           paddingBottom: 4, borderBottom: '1px solid #1A1A1A',
@@ -30,7 +32,7 @@ export default function AcademicTemplate({ data, accent, lang, sections, showPho
 
   const renderMap = {
     personal: () => (
-      <header key="personal" style={{ marginBottom: 22, textAlign: 'center' }}>
+      <header key="personal" data-section="personal" style={{ marginBottom: sp(22), textAlign: 'center' }}>
         {showPhoto && (
           <div style={{ display:'flex', justifyContent:'center', marginBottom:10 }}>
             <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={68} accent={accent}/>
@@ -225,7 +227,7 @@ export default function AcademicTemplate({ data, accent, lang, sections, showPho
 
   return (
     <div style={{
-      padding: '14mm 18mm',
+      padding: margin('14mm 18mm'),
       fontFamily: 'var(--cv-heading)',
       color: '#1A1A1A',
       direction: isRtl ? 'rtl' : 'ltr',

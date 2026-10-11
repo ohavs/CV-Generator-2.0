@@ -114,6 +114,15 @@ input, textarea, select { font-family: inherit; color: inherit; }
   -webkit-font-smoothing: antialiased;
 }
 
+/* ---- CV page safety net ----------------------------------------------
+   Templates set their own sizes, but nothing on the page may fall back to
+   the editor UI's 16px, and no unbreakable token (an e-mail, a URL) may push
+   past its column: it wraps where it must instead. */
+.preview-page [data-template] { font-size: 11px; }
+.preview-page [data-editable] { overflow-wrap: anywhere; }
+/* A field isolated in its own direction still lines up with its neighbours. */
+.preview-page [data-editable][dir] { text-align: match-parent; }
+
 /* zoom badge */
 .zoom-badge {
   position: absolute;
@@ -630,10 +639,38 @@ body[data-exporting] .photo-remove { display: none !important; }
 .font-scale-label {
   font-size: 13px;
   color: var(--ink-3);
-  min-width: 36px;
+  min-width: 44px;
   text-align: center;
   font-weight: 600;
+  padding: 3px 4px;
+  border-radius: 6px;
 }
+button.font-scale-label:hover { background: var(--surface-2); color: var(--ink); }
+
+.panel-hint { font-size: 11.5px; color: var(--ink-4); margin-top: 6px; line-height: 1.5; }
+.fit-note {
+  display: flex; align-items: flex-start; gap: 6px;
+  margin-top: 8px; padding: 7px 9px; border-radius: 8px;
+  font-size: 11.5px; line-height: 1.45; color: var(--ink-2);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.fit-note svg { flex-shrink: 0; margin-top: 2px; color: var(--accent); }
+
+/* heading / body font chosen separately */
+.font-split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.font-split-label { font-size: 11.5px; font-weight: 600; color: var(--ink-3); margin-bottom: 4px; }
+.font-dropdown[data-single] .font-dropdown-trigger { padding: 8px 10px; gap: 8px; }
+.font-dropdown[data-single] .font-dropdown-preview { font-size: 20px; min-width: 30px; }
+.font-dropdown[data-single] .font-dropdown-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.font-dropdown[data-single] .font-dropdown-sub { font-size: 10.5px; }
+.font-dropdown[data-single] .font-dropdown-info { min-width: 0; flex: 1; }
+/* the open list spans both columns, not just the half it was opened from */
+.font-split { position: relative; }
+.font-split .font-dropdown { position: static; }
+
+/* segmented control that may wrap onto two lines on a narrow panel */
+.seg-wrap { flex-wrap: wrap; justify-content: flex-end; }
+.seg-wrap button { padding: 6px 10px; min-width: 32px; }
 
 /* section list */
 .section-list {
@@ -664,6 +701,33 @@ body[data-exporting] .photo-remove { display: none !important; }
   color: var(--ink-2);
   font-size: 14px;
 }
+button.section-label-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-width: 0; text-align: start; padding: 2px 4px; margin: -2px -4px;
+  border-radius: 6px; cursor: text; font: inherit; font-weight: 500;
+}
+button.section-label-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button.section-label-btn svg { flex-shrink: 0; color: var(--ink-4); opacity: 0; transition: opacity 0.12s; }
+button.section-label-btn:hover, button.section-label-btn:focus-visible { background: var(--surface-2); }
+button.section-label-btn:hover svg, button.section-label-btn:focus-visible svg { opacity: 1; }
+@media (hover: none) { button.section-label-btn svg { opacity: 0.7; } }
+.section-rename {
+  flex: 1; min-width: 0; font: inherit; font-size: 14px; font-weight: 500;
+  padding: 4px 8px; border-radius: 6px; color: var(--ink);
+  border: 1px solid var(--accent); background: var(--surface); outline: none;
+}
+.size-stepper {
+  display: inline-flex; align-items: center; flex-shrink: 0;
+  background: var(--surface-2); border-radius: 8px; padding: 2px;
+}
+.size-stepper button {
+  height: 24px; min-width: 24px; display: grid; place-items: center;
+  border-radius: 6px; color: var(--ink-3);
+}
+.size-stepper button:hover:not(:disabled) { background: var(--surface); color: var(--ink); }
+.size-stepper button:disabled { opacity: 0.3; cursor: default; }
+.size-stepper .size-value { min-width: 40px; font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.size-stepper .size-value[data-changed] { color: var(--accent); }
 .section-row .toggle-vis {
   color: var(--ink-3);
   padding: 5px;
@@ -878,10 +942,17 @@ body[data-mobile-editing] .history-badge { display: none !important; }
   user-select: none;
 }
 .bullet-add:hover { color: color-mix(in srgb, currentColor 70%, transparent); }
-/* on hover-capable devices keep the page clean — reveal on section hover */
+/* on hover-capable devices keep the page clean — reveal on section hover.
+   It floats just under the list instead of taking a line, so the page on
+   screen is laid out exactly like the PDF (which never shows it). */
 @media (hover: hover) {
-  .bullet-add { opacity: 0; transition: opacity 0.15s; }
-  [data-bullet-list]:hover .bullet-add, .bullet-add:focus-visible { opacity: 1; }
+  [data-bullet-list] { position: relative; }
+  .bullet-add {
+    position: absolute; top: 100%; inset-inline-start: 0; z-index: 2;
+    padding: 1px 6px; background: #fff;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  [data-bullet-list]:hover .bullet-add, .bullet-add:focus-visible { opacity: 1; pointer-events: auto; }
 }
 
 /* reorder arrows in the sections list */
@@ -1157,3 +1228,5 @@ body[data-exporting] [data-add-inline] { display: none !important; }
 body[data-exporting] [data-editable][data-empty="true"]::before,
 body[data-exporting] [data-editable]:empty::before { content: '' !important; }
 body[data-exporting] [data-editable] { background: transparent !important; box-shadow: none !important; outline: none !important; }
+.fit-note[data-severe] { background: color-mix(in srgb, #d64545 12%, transparent); }
+.fit-note[data-severe] svg { color: #d64545; }

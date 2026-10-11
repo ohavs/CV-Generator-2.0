@@ -2,10 +2,12 @@ import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { entryEmpty, linkEmpty } from '../entryUtils.js';
 import PhraseBank from './PhraseBank.jsx';
+import { labelsFor } from '../templates/helpers.js';
 
-export default function ContentTab({ state, setState, t, onAddJump }) {
+export default function ContentTab({ state, setState, t: uiT, onAddJump }) {
   const lang = state.language;
   const data = state.data[lang];
+  const t = { ...uiT, sections: labelsFor(lang, data).sections }; // renamed sections read as renamed
   const [blockedKey, setBlockedKey] = useState(null);
 
   const blanks = {
