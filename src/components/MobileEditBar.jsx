@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Icon from './Icon.jsx';
+import SizeStepper from './SizeStepper.jsx';
 
 /**
  * Mobile text editor. On phones the A4 preview is scaled way down, so caret
@@ -11,7 +12,7 @@ import Icon from './Icon.jsx';
  * treats that like "an editable is focused" and won't delete the entry
  * mid-edit; CSS also hides the floating CTA.
  */
-export default function MobileEditBar({ lang }) {
+export default function MobileEditBar({ lang, sectionScale = {}, onSectionScale }) {
   const [req, setReq] = useState(null);   // {el, value, placeholder, multiline, onCommit}
   const [text, setText] = useState('');
   const taRef = useRef(null);
@@ -60,6 +61,9 @@ export default function MobileEditBar({ lang }) {
 
   if (!req) return null;
 
+  // The section the field belongs to — its text size can be set right here.
+  const sectionId = req.el?.closest?.('[data-section]')?.getAttribute('data-section');
+
   const t = lang === 'he'
     ? { done: 'סיום', cancel: 'ביטול', hint: req.placeholder || 'טקסט' }
     : { done: 'Done', cancel: 'Cancel', hint: req.placeholder || 'Text' };
@@ -75,6 +79,13 @@ export default function MobileEditBar({ lang }) {
           </button>
         </div>
       </div>
+      {sectionId && onSectionScale && (
+        // mousedown would move focus off the textarea and drop the keyboard
+        <div className="meb-size" onMouseDown={(e) => e.preventDefault()}>
+          <span>{lang === 'he' ? 'גודל הטקסט במקטע הזה' : 'Text size in this section'}</span>
+          <SizeStepper value={sectionScale[sectionId] ?? 1} onChange={(v) => onSectionScale(sectionId, v)} lang={lang}/>
+        </div>
+      )}
       <textarea
         ref={taRef}
         value={text}

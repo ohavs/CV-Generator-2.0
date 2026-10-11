@@ -14,7 +14,7 @@ const BoldTemplate = memo(function BoldTemplate({ data, accent, lang, sections, 
   const Section = ({ id, title, children }) => (
     <section data-section={id} style={{ marginBottom: sp(15) }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:9 }}>
-        <div style={{ width:22, height:3, background:accent, borderRadius:2, flexShrink:0 }}/>
+        <div data-deco style={{ width:22, height:3, background:accent, borderRadius:2, flexShrink:0 }}/>
         <h2 data-section-title style={{
           fontSize:9.5, letterSpacing:'0.22em', textTransform:'uppercase',
           fontWeight:800, color:'#1A1A1A', margin:0, fontFamily:'var(--cv-body)',

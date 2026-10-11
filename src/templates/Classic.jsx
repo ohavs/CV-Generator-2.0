@@ -19,7 +19,7 @@ const ClassicTemplate = memo(function ClassicTemplate({ data, accent, lang, sect
           fontWeight: 700, color: accent, margin: 0, fontFamily: 'var(--cv-body)',
           whiteSpace: 'nowrap',
         }}>{title}</h2>
-        <div style={{ flex: 1, height: 1, background: '#1A1A1A' }}/>
+        <div data-deco style={{ flex: 1, height: 1, background: '#1A1A1A' }}/>
       </div>
       {children}
     </section>

@@ -1,32 +1,9 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import FitNote from './FitNote.jsx';
-import { I18N, LIMITS, clampTo } from '../data.js';
+import { I18N, LIMITS } from '../data.js';
+import SizeStepper, { withSectionScale } from '../components/SizeStepper.jsx';
 import { labelsFor } from '../templates/helpers.js';
-
-const round2 = (v) => Math.round(v * 100) / 100;
-
-// − 100% + : one section's text size. Tapping the number resets it.
-function SizeStepper({ value, onChange, lang }) {
-  const { min, max, step } = LIMITS.sectionScale;
-  const he = lang === 'he';
-  return (
-    <span className="size-stepper" title={he ? 'גודל הטקסט במקטע' : 'Text size in this section'}>
-      <button disabled={value <= min + 1e-6} onClick={() => onChange(round2(clampTo(value - step, LIMITS.sectionScale)))}
-        aria-label={he ? 'הקטנת טקסט' : 'Smaller text'}>
-        <Icon name="minus" size={12}/>
-      </button>
-      <button className="size-value" data-changed={value !== 1 || undefined} onClick={() => onChange(1)}
-        aria-label={he ? 'איפוס ל-100%' : 'Reset to 100%'}>
-        {Math.round(value * 100)}%
-      </button>
-      <button disabled={value >= max - 1e-6} onClick={() => onChange(round2(clampTo(value + step, LIMITS.sectionScale)))}
-        aria-label={he ? 'הגדלת טקסט' : 'Larger text'}>
-        <Icon name="plus" size={12}/>
-      </button>
-    </span>
-  );
-}
 
 export default function SectionsTab({ state, setState, fitScale = 1 }) {
   const lang = state.language;
@@ -52,11 +29,7 @@ export default function SectionsTab({ state, setState, fitScale = 1 }) {
   };
 
   const scaleOf = (id) => state.sectionScale?.[id] ?? 1;
-  const setScale = (id, v) => {
-    const next = { ...(state.sectionScale || {}) };
-    if (v === 1) delete next[id]; else next[id] = v;
-    setState({ ...state, sectionScale: next });
-  };
+  const setScale = (id, v) => setState(withSectionScale(state, id, v));
   const anyScaled = Object.values(state.sectionScale || {}).some(v => v !== 1);
 
   // A title is content (it differs per language), so it lives with the data.

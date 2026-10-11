@@ -6,6 +6,7 @@ import { TemplateRoot } from './templates/index.jsx';
 import Sidebar from './sidebar/Sidebar.jsx';
 import AutoFit from './components/AutoFit.jsx';
 import MobileEditBar from './components/MobileEditBar.jsx';
+import { withSectionScale } from './components/SizeStepper.jsx';
 import FullEditor from './components/FullEditor.jsx';
 import { useIsMobile } from './components/Editable.jsx';
 import Icon from './components/Icon.jsx';
@@ -270,12 +271,20 @@ export default function App() {
     spacing: clampTo(state.sectionSpacing ?? 1, LIMITS.spacing),
     bulletStyle: state.bulletStyle,
     photoShape: state.photoShape,
-  }), [state.fontScale, state.sectionScale, state.sectionSpacing, state.bulletStyle, state.photoShape]);
+    sectionNumbers: state.sectionNumbers,
+    decorations: state.decorations,
+  }), [state.fontScale, state.sectionScale, state.sectionSpacing, state.bulletStyle, state.photoShape,
+       state.sectionNumbers, state.decorations]);
 
   const isMobile = useIsMobile();
+  const onSectionScale = useCallback((id, v) => setState(s => withSectionScale(s, id, v)), [setState]);
 
   const openFull = useCallback(() => { setMobileOpen(false); setFullEdit(true); }, []);
   const closeFull = useCallback(() => { setFullEdit(false); schedulePrune(); }, [schedulePrune]);
+
+  // Blank items left behind in a language (or a document) get cleaned up
+  // when it comes into view, not only after an edit there.
+  useEffect(() => { schedulePrune(); }, [state.language, activeId, schedulePrune]);
 
   // When the mobile edit bar closes (commit or cancel), clean up leftovers.
   useEffect(() => {
@@ -407,7 +416,11 @@ export default function App() {
           </div>
         </div>
 
-        <MobileEditBar lang={state.language}/>
+        <MobileEditBar
+          lang={state.language}
+          sectionScale={design.sectionScale}
+          onSectionScale={onSectionScale}
+        />
 
         <div className="history-badge">
           <button onClick={undo} disabled={!canUndo} title={state.language === 'he' ? 'בטל (Ctrl+Z)' : 'Undo (Ctrl+Z)'}>

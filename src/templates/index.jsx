@@ -55,12 +55,18 @@ function sectionZoomCss(sections, textScale = 1, sectionScale = {}) {
 
 export function TemplateRoot({ design = {}, ...props }) {
   const Comp = Templates[props.template] || Templates.classic;
-  const { textScale = 1, sectionScale, spacing = 1, bulletStyle = 'auto', photoShape = 'auto' } = design;
+  const { textScale = 1, sectionScale, spacing = 1, bulletStyle = 'auto', photoShape = 'auto',
+    sectionNumbers = 'auto', decorations = 'auto' } = design;
   const css = useMemo(() => sectionZoomCss(props.sections, textScale, sectionScale), [props.sections, textScale, sectionScale]);
   const ctx = useMemo(() => ({ bulletStyle, photoShape }), [bulletStyle, photoShape]);
   return (
     <DesignContext.Provider value={ctx}>
-      <div data-template={props.template} style={{ '--cv-space': spacing }}>
+      <div
+        data-template={props.template}
+        data-numbering={sectionNumbers}
+        data-decorations={decorations}
+        style={{ '--cv-space': spacing, '--cv-accent': props.accent }}
+      >
         {css && <style>{css}</style>}
         <Suspense fallback={PageBlank}>
           <Comp {...props}/>

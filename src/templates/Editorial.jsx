@@ -18,7 +18,7 @@ export default function EditorialTemplate({ data, accent, lang, sections, showPh
           fontFamily: 'var(--cv-heading)', fontSize: 11, fontWeight: 600,
           margin: 0, color: accent, textTransform: 'uppercase', letterSpacing: '0.18em',
         }}>{title}</h2>
-        <span style={{ flex: 1, height: 1, background: accent, opacity: 0.4 }}/>
+        <span data-deco style={{ flex: 1, height: 1, background: accent, opacity: 0.4 }}/>
       </div>
       {children}
     </section>
@@ -31,7 +31,7 @@ export default function EditorialTemplate({ data, accent, lang, sections, showPh
           <PhotoSlot value={data.personal?.photo} onChange={(v) => onEdit(['personal','photo'], v)} size={72} accent={accent}/>
         )}
         <div style={{ flex:1 }}>
-      <div style={{ fontFamily: 'var(--cv-body)', fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: '#888', marginBottom: 14 }}>
+      <div data-deco style={{ fontFamily: 'var(--cv-body)', fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: '#888', marginBottom: 14 }}>
         {isRtl ? '— קורות חיים —' : '— curriculum vitae —'}
       </div>
       <Editable as="h1" {...F(['personal', 'name'])}
